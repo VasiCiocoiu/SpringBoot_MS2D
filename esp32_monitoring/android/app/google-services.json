@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "427316508025",
+    "firebase_url": "https://esp32-bd-8ac4d-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "esp32-bd-8ac4d",
+    "storage_bucket": "esp32-bd-8ac4d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:427316508025:android:b88b64c9cf5d077811aba8",
+        "android_client_info": {
+          "package_name": "com.esp32monitoring"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHeIopXZDsBTuy3_3vV1OKU3Xcl7WS2b4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
