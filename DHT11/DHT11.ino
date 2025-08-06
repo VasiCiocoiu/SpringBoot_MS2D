@@ -16,7 +16,7 @@
 #include "addons/RTDBHelper.h"
 
 // Insert Firebase project API Key
-#define API_KEY "AIzaSyAgaAgBG95VTOu0ntyqpK5LkcBjPbli-n4"
+#define API_KEY ""
 
 // Insert RTDB URL
 #define DATABASE_URL "https://esp32-bd-8ac4d-default-rtdb.europe-west1.firebasedatabase.app/" 
