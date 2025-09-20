@@ -24,14 +24,16 @@ class HierarchyContext {
 
   String get measurementsPath {
     if (!isComplete) {
-      throw StateError('Cannot generate path without complete hierarchy selection');
+      throw StateError(
+          'Cannot generate path without complete hierarchy selection');
     }
     return '$userId/$selectedApiaryId/$selectedHiveId/measurements';
   }
 
   String get constantsPath {
     if (!isComplete) {
-      throw StateError('Cannot generate path without complete hierarchy selection');
+      throw StateError(
+          'Cannot generate path without complete hierarchy selection');
     }
     return '$userId/$selectedApiaryId/$selectedHiveId/constants';
   }
@@ -47,7 +49,8 @@ class HierarchyContext {
 
   String get selectedHivePath {
     if (!isComplete) {
-      throw StateError('Cannot generate hive path without complete hierarchy selection');
+      throw StateError(
+          'Cannot generate hive path without complete hierarchy selection');
     }
     return '$userId/$selectedApiaryId/$selectedHiveId';
   }
@@ -69,7 +72,8 @@ class HierarchyContext {
   }
 
   HierarchyContext selectApiary(Apiary apiary) {
-    return copyWith(
+    return HierarchyContext(
+      userId: userId,
       selectedApiaryId: apiary.id,
       selectedApiary: apiary,
       selectedHiveId: null,
@@ -89,7 +93,10 @@ class HierarchyContext {
   }
 
   HierarchyContext clearHiveSelection() {
-    return copyWith(
+    return HierarchyContext(
+      userId: userId,
+      selectedApiaryId: selectedApiaryId,
+      selectedApiary: selectedApiary,
       selectedHiveId: null,
       selectedHive: null,
     );
