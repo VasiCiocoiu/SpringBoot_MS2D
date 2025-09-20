@@ -7,7 +7,7 @@ class ThresholdModal extends StatefulWidget {
   const ThresholdModal({super.key, required this.firebaseService});
 
   @override
-  _ThresholdModalState createState() => _ThresholdModalState();
+  State<ThresholdModal> createState() => _ThresholdModalState();
 }
 
 class _ThresholdModalState extends State<ThresholdModal> {
@@ -32,13 +32,18 @@ class _ThresholdModalState extends State<ThresholdModal> {
             .toStringAsFixed(1); // Convert ms to minutes
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Erreur lors du chargement des seuils.")),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text("Erreur lors du chargement des seuils.")),
+        );
+      }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -112,25 +117,35 @@ class _ThresholdModalState extends State<ThresholdModal> {
                         return;
                       }
 
+                      // Capture context and navigator before async operation
+                      final navigator = Navigator.of(context);
+                      final messenger = ScaffoldMessenger.of(context);
+
                       await widget.firebaseService.updateThresholdsAndInterval(
                         humidityThreshold,
                         temperatureThreshold,
                         intervalMs,
                       );
 
-                      Navigator.pop(context); // Close the modal
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                              "Seuils et intervalle mis à jour avec succès !"),
-                        ),
-                      );
+                      if (mounted) {
+                        navigator.pop(); // Close the modal
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                "Seuils et intervalle mis à jour avec succès !"),
+                          ),
+                        );
+                      }
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Veuillez entrer des valeurs valides."),
-                        ),
-                      );
+                      if (mounted) {
+                        final messenger = ScaffoldMessenger.of(context);
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content:
+                                Text("Veuillez entrer des valeurs valides."),
+                          ),
+                        );
+                      }
                     }
                   },
                   child: const Text("Enregistrer"),
