@@ -510,9 +510,10 @@ L'appareil ESP32 utilise actuellement une connexion WiFi avec une architecture r
   - `interval` (défaut: 60000ms)
   - `notifyEnabled` (défaut: true)
 - **Mise à Jour en Temps Réel** : Récupération des constantes à chaque cycle
-- **Path Firebase** : `userID/rucherName/rucheName/constants/`
+- **Path Firebase des mesures** : `userID/rucherName/rucheName/constants/`
+- **Path Firebase des constantes** : `userID/rucherName/rucheName/mesurments/`
 
-##### Détection d'Événements Intelligente
+##### Détection d'Événements
 
 - **Types d'événements** :
   - `"data"` : Mesure normale dans les seuils
@@ -539,33 +540,73 @@ const char *rucheName = "ruche_TEST";
 
 #### Contraintes de Mémoire Actuelles
 
-**État actuel de l'utilisation mémoire :**
+**État actuel après optimisation partielle :**
 
-- **Mémoire programme** : 2,040,831 bytes (155% de 1,310,720 bytes) ❌
+- **Mémoire programme** : ~95% de 1,310,720 bytes ⚠️ (Optimisation partielle effectuée)
 - **Variables globales** : 65,544 bytes (20% de 327,680 bytes) ✅
 - **Mémoire locale disponible** : 262,136 bytes ✅
 
-**Problème identifié :** Le sketch dépasse la capacité de stockage de programme, empêchant l'ajout de fonctionnalités Bluetooth supplémentaires.
+**Problème persistant :** Malgré les optimisations effectuées (suppression des messages de debug et logique de débogage), l'espace mémoire restant (~5%) est insuffisant pour ajouter les fonctionnalités Bluetooth.
 
-#### Optimisations Nécessaires pour Bluetooth
+**Exemple d'erreur lors d'ajout de fonctionnalités :**
 
-**Stratégies d'optimisation recommandées :**
+```
+Sketch uses 2040831 bytes (155%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 65544 bytes (20%) of dynamic memory, leaving 262136 bytes for local variables. Maximum is 327680 bytes.
+Sketch too big; see https://support.arduino.cc/hc/en-us/articles/360013825179 for tips on reducing it.
+text section exceeds available space in board
+```
 
-1. **Réduction des Strings** : Utiliser F() macros pour stocker les chaînes en Flash
-2. **Optimisation Firebase** : Réduire la taille des buffers internes
-3. **Code Conditionnel** : Compilation conditionnelle des fonctionnalités debug
-4. **Bibliothèques Allégées** : Remplacer WiFiManager par une implémentation minimaliste
-5. **Compression JSON** : Optimiser la structure des données transmises
+#### Optimisations Réalisées et Limites Persistantes
+
+**Optimisations partielles déjà effectuées :**
+
+1. **Suppression Debug** : Retrait des messages Serial.print() et logique de débogage
+2. **Nettoyage Code** : Suppression des fonctions et variables inutilisées
+3. **Optimisation mineure** : Quelques améliorations de structure
+
+**Espace mémoire restant :** Toujours ~5% (~65KB) - **Insuffisant pour Bluetooth**
+
+**Défis techniques non résolus :**
+
+- **BluetoothSerial** : Requiert toujours ~30-40KB
+- **ArduinoJson** (parsing) : Requiert toujours ~20-30KB
+- **Code d'appairage** : Requiert toujours ~10-15KB
+- **Total estimé** : ~60-85KB (dépasse encore l'espace disponible)
+
+**Limitations de l'optimisation actuelle :**
+
+- Les bibliothèques Firebase et WiFiManager restent volumineuses
+- L'architecture de base n'a pas été modifiée en profondeur
+- Les optimisations "faciles" (debug) ont été épuisées
+
+**Optimisations avancées nécessaires (non réalisées) :**
+
+1. **Remplacement WiFiManager** : Par une implémentation custom (~200KB économisés)
+2. **Optimisation Firebase profonde** : Buffers et fonctionnalités non utilisées (~150KB)
+3. **Partitioning Flash personnalisé** : Réorganisation de l'espace mémoire
+4. **Migration ESP32-WROVER** : Modèle avec 4MB Flash au lieu de 1.3MB
 
 ### Intégration Bluetooth (Théorique)
 
 #### Défis Techniques Identifiés
 
-**Contrainte Mémoire Critique :**
+**Contrainte Mémoire Persistante :**
 
-- Le sketch actuel atteint 155% de la capacité de stockage
-- L'ajout de `BluetoothSerial` et `ArduinoJson` aggraverait le dépassement
-- Optimisation majeure requise avant implémentation Bluetooth
+- Le sketch reste à 95% de la capacité de stockage malgré l'optimisation partielle
+- L'ajout de `BluetoothSerial` et `ArduinoJson` dépasse encore les 5% restants disponibles
+- Les optimisations "faciles" (suppression debug) sont insuffisantes pour libérer l'espace requis
+
+**Constat technique :** Les optimisations de surface ne suffisent pas - une refonte architecturale majeure serait nécessaire
+
+- Optimisation supplémentaire ou choix d'architecture alternative requis
+
+**Solutions alternatives possibles :**
+
+1. **ESP32 avec plus de mémoire** : Utiliser un modèle ESP32-WROVER avec 4MB Flash
+2. **Bluetooth minimal** : Implémentation sans ArduinoJson, parsing manuel
+3. **Configuration par WiFi** : Remplacer le Bluetooth par un portail web de configuration
+4. **Partition personnalisée** : Réorganiser l'espace Flash pour plus de code
 
 #### Configuration Bluetooth Théorique
 
@@ -592,36 +633,11 @@ const char *rucheName = "ruche_TEST";
 5. **Connexion WiFi** : Tentative de connexion avec nouveaux paramètres
 6. **Confirmation** : Retour de statut vers l'application mobile
 
-#### Impact sur l'Architecture Firebase
-
-**Paths Dynamiques après Bluetooth :**
-
-```cpp
-// Avant (hardcodé)
-String path = "AuCwrs4JriWNk3jserhfih2lR5j2/rucher_TEST/ruche_TEST/measurements/";
-
-// Après (configuré via Bluetooth)
-String path = String(userID) + "/" + String(rucherName) + "/" + String(rucheName) + "/measurements/";
-```
-
-**Flexibilité Apportée :**
-
-- **Multi-Utilisateur** : Support de plusieurs comptes Firebase
-- **Multi-Rucher** : Gestion de plusieurs ruchers par utilisateur
-- **Multi-Ruche** : Configuration spécifique par ruche
-- **Reconfiguration** : Changement d'affectation sans reprogrammation
-
 #### Optimisations Prioritaires
 
-**Pour libérer ~700KB de mémoire programme :**
-
-1. **WiFiManager → Custom** : Réduction de ~200KB
-2. **Firebase Optimized** : Réduction de ~150KB
-3. **String Optimization** : Réduction de ~100KB
-4. **Code Cleanup** : Réduction de ~100KB
-5. **Library Updates** : Réduction de ~150KB
-
-**Résultat attendu :** Mémoire programme ~85% permettant l'ajout Bluetooth
+1. **WiFiManager → Solution Custom Ou envoye des identifiants WI-FI dans les JSON pas le bluetooth**
+2. **String Optimization**
+3. **Code Cleanup**
 
 ## Intégration Bluetooth (Théorique)
 
@@ -858,16 +874,16 @@ L'application web Spring Boot fournit une interface utilisateur complète pour l
       "description": "string",
       "hive_name": {
         "constants": {
-          "humidity": 80,
-          "interval": 60000,
-          "notify": true,
-          "temperature": 30
+          "humidity": "humidite",
+          "interval": "en ms",
+          "notify": "boolean",
+          "temperature": "temperature"
         },
         "measurements": {
           "20-09-2025_09:10": {
             "data_package": {
-              "humidity": 70,
-              "temperature": 24
+              "humidity": "humidite",
+              "temperature": "temperature"
             },
             "type": "data"
           }
