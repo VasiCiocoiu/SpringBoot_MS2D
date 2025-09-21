@@ -5,7 +5,7 @@ on:
     branches: [ "main", "front" ]
   pull_request:
     branches: [ "main", "front" ]
-  workflow_dispatch:  # permet un lancement manuel
+  workflow_dispatch:  # lancement manuel
 
 jobs:
   build:
@@ -15,13 +15,13 @@ jobs:
       # 1. Checkout du code
       - uses: actions/checkout@v4
 
-      # 2. Installer Flutter (Dart 3.6+ inclus) et forcer une installation propre
+      # 2. Installer Flutter 3.13.x (Dart 3.6+ inclus)
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.10.6
+          flutter-version: 3.13.6
           channel: stable
-          cache: false  # désactive le cache pour éviter d'utiliser une version plus ancienne
+          cache: false  # force une installation propre
 
       # 3. Vérifier les versions Flutter & Dart
       - name: Check Flutter & Dart version
