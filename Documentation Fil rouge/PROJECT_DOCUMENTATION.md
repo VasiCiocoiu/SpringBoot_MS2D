@@ -154,16 +154,10 @@ graph TB
     User --> CreerRucher
     User --> ModifierRucher
     User --> SupprimerRucher
-    User --> ConsulterRuches
     User --> CreerRuche
     User --> ModifierRuche
     User --> SupprimerRuche
-    User --> ConsulterMesures
-    User --> VisualiserGraphiques
-    User --> ConfigurerSeuils
-    User --> ConsulterEvenements
     User --> ApparierESP32
-    User --> ConfigurerESP32
 
     %% Héritage : Admin hérite de User
     Admin -.->|hérite| User
@@ -179,17 +173,13 @@ graph TB
 
     %% Relations d'inclusion (include)
     ConsulterRuchers -.->|include| S_Authentifier
-    ConsulterRuches -.->|include| S_Authentifier
-    ConsulterMesures -.->|include| S_Authentifier
     CreerRucher -.->|include| S_Authentifier
     ModifierRucher -.->|include| S_Authentifier
     SupprimerRucher -.->|include| S_Authentifier
     CreerRuche -.->|include| S_Authentifier
     ModifierRuche -.->|include| S_Authentifier
     SupprimerRuche -.->|include| S_Authentifier
-    ConfigurerSeuils -.->|include| S_Authentifier
     ApparierESP32 -.->|include| S_Authentifier
-    ConfigurerESP32 -.->|include| S_Authentifier
     GererUtilisateurs -.->|include| S_Authentifier
     ConsulterStatistiques -.->|include| S_Authentifier
 
@@ -236,8 +226,9 @@ graph TB
 
 ##### **Relations d'Inclusion (include)**
 
-- Tous les cas d'usage fonctionnels **incluent** `S'Authentifier`
+- Les cas d'usage principaux (points d'entrée) **incluent** `S'Authentifier`
 - `Gérer les Utilisateurs` **inclut** `Créer un Compte Utilisateur`, `Modifier le Rôle Utilisateur`, `Supprimer un Utilisateur`
+- Les cas d'usage étendus héritent de l'authentification via leur parent
 
 ##### **Relations d'Extension (extend)**
 
@@ -251,14 +242,23 @@ graph TB
 #### **Flux de Navigation Principal**
 
 ```
-1. S'Authentifier (obligatoire pour tous)
-2. Consulter les Ruchers (point d'entrée)
-3. Consulter les Ruches (navigation hiérarchique)
-4. Consulter les Mesures (données de surveillance)
-   ├── Visualiser les Graphiques (analyse visuelle)
-   ├── Consulter les Événements (alertes)
-   └── Configurer les Seuils (paramétrage)
+1. S'Authentifier (requis pour les points d'entrée)
+2. Consulter les Ruchers (point d'entrée principal)
+   └── Consulter les Ruches (extension automatique)
+       └── Consulter les Mesures (extension automatique)
+           ├── Visualiser les Graphiques (extension optionnelle)
+           ├── Consulter les Événements (extension optionnelle)
+           └── Configurer les Seuils (extension optionnelle)
+3. Apparier un ESP32 (point d'entrée mobile)
+   └── Configurer un ESP32 (extension automatique)
 ```
+
+#### **Principe de Simplification UML**
+
+- **Utilisateur** → Lié uniquement aux cas d'usage **points d'entrée**
+- **Extensions automatiques** → Accessibles via navigation hiérarchique
+- **Authentification** → Incluse seulement dans les points d'entrée
+- **Héritage d'authentification** → Les extensions héritent via leur parent
 
 #### **Contraintes de Plateforme**
 
