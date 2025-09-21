@@ -17,11 +17,11 @@ jobs:
       # 1. Checkout du code
       - uses: actions/checkout@v4
 
-      # 2. Installer Flutter 3.16.5 (Dart 3.6+ inclus)
+      # 2. Installer Flutter 3.35.4 (Dart 3.6+ inclus)
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.16.5
+          flutter-version: 3.35.4
           channel: stable
           cache: false  # force une installation propre
 
