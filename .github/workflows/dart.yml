@@ -11,19 +11,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      FLUTTER_SUPPRESS_ANALYTICS: true  # Désactive la télémétrie Flutter
+      FLUTTER_SUPPRESS_ANALYTICS: true
 
     steps:
       # 1. Checkout du code
       - uses: actions/checkout@v4
 
-      # 2. Installer Flutter 3.35.4 (Dart 3.6+ inclus)
+      # 2. Installer Flutter
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: 3.35.4
           channel: stable
-          cache: false  # force une installation propre
+          cache: false 
 
       # 3. Vérifier les versions Flutter & Dart
       - name: Check Flutter & Dart version
@@ -40,12 +40,12 @@ jobs:
         run: flutter test
         working-directory: esp32_monitoring
 
-      # 7. Build APK release
+      # 7. Build APK
       - name: Build APK
         run: flutter build apk --release
         working-directory: esp32_monitoring
 
-      # 8. Sauvegarder l’APK comme artefact GitHub
+      # 8. Sauvegarder l’APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
