@@ -6,7 +6,7 @@
 2. [Architecture du Système](#architecture-du-système)
 3. [Diagramme de Classes](#diagramme-de-classes)
 4. [Flux de Données](#flux-de-données)
-5. [Diagramme de Séquence - Page Liste des Ruchers](#diagramme-de-séquence---page-liste-des-ruchers)
+5. [Diagramme de Séquence - Création d'un Rucher](#diagramme-de-séquence---création-dun-rucher)
 6. [Intégration Matérielle ESP32](#intégration-matérielle-esp32)
 7. [Intégration Bluetooth (Théorique)](#intégration-bluetooth-théorique)
 8. [Structure de la Base de Données Firebase](#structure-de-la-base-de-données-firebase)
@@ -43,84 +43,56 @@
 - **Gestion des ruchers et ruches** : CRUD complet via interface web
 - **Authentification unifiée** : Utilise les mêmes comptes Firebase que l'application mobile
 
-#### Dispositifs ESP32
-
-- **Authentification utilisateur** : Authentification Firebase sécurisée avec isolation des utilisateurs
-- **Prêt pour la production** : Tests complets avec 54 tests unitaires (application mobile)
-
 ## Architecture du Système
 
 ```mermaid
-graph TB
-    subgraph "Applications Clients"
-        FA[📱 Flutter App<br/>Mobile]
-        WA[🌐 Spring Boot<br/>Web App]
+graph TD
+    subgraph "Système Beemo"
+        Mobile[📱 Application Mobile<br/>Flutter]
+        Web[🌐 Application Web<br/>Spring Boot]
+        ESP[� Dispositif ESP32<br/>Capteurs IoT]
     end
 
-    subgraph "Backend Services"
-        FB[🔥 Firebase<br/>Realtime Database]
-        AUTH[🔐 Firebase<br/>Auth System]
-    end
+    Firebase[(🔥 Firebase<br/>Database + Auth)]
 
-    subgraph "Dispositifs IoT"
-        ESP[🔧 ESP32 Device<br/>DHT11 Sensor]
-    end
+    Mobile <--> Firebase
+    Web <--> Firebase
+    ESP <--> Firebase
 
-    %% Connexions principales
-    FA <--> AUTH
-    WA <--> AUTH
-    FA <--> FB
-    WA <--> FB
-    ESP <--> FB
+    classDef app fill:#e3f2fd,stroke:#1976d2,stroke-width:3px,color:#000
+    classDef firebase fill:#fff3e0,stroke:#f57c00,stroke-width:3px,color:#000
 
-    %% Fonctionnalités spécifiques
-    FA -.->|Bluetooth Pairing| ESP
-    WA -.->|Admin Panel| AUTH
-
-    %% Labels des connexions
-    FA -.->|"• State Management<br/>• UI/Charts<br/>• CRUD Ops<br/>• Bluetooth"| FA
-    WA -.->|"• Web UI<br/>• Admin Panel<br/>• User Management<br/>• Reporting"| WA
-    FB -.->|"• User Data<br/>• Measurements<br/>• Configuration<br/>• Events<br/>• Admin Data"| FB
-    ESP -.->|"• DHT11 Sensor<br/>• WiFi Manager<br/>• Offline Buffer<br/>• Cover Detection"| ESP
-    AUTH -.->|"• User Accounts<br/>• Role Management<br/>• Session Management"| AUTH
-
-    classDef mobileApp fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#000
-    classDef webApp fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#000
-    classDef backend fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
-    classDef iot fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px,color:#000
-
-    class FA mobileApp
-    class WA webApp
-    class FB,AUTH backend
-    class ESP iot
+    class Mobile,Web,ESP app
+    class Firebase firebase
 ```
 
-### Vue d'ensemble de l'Architecture
+### Vue d'ensemble Simple
 
-Le système **Beemo** est construit sur une architecture distribuée moderne qui sépare clairement les responsabilités :
+Le système **Beemo** est composé de **3 applications principales** qui communiquent toutes avec **Firebase** :
 
-#### 🏗️ **Couches d'Architecture**
+#### 📱 **Application Mobile Flutter**
 
-1. **Couche Présentation**
+- Interface mobile native
+- Appairage Bluetooth ESP32
+- Surveillance en temps réel
 
-   - Application mobile Flutter (interface tactile native)
-   - Application web Spring Boot (interface navigateur responsive)
+#### 🌐 **Application Web Spring Boot**
 
-2. **Couche Services Backend**
+- Interface web responsive
+- Fonctionnalités d'administration
+- Gestion des utilisateurs
 
-   - Firebase Realtime Database (stockage de données en temps réel)
-   - Firebase Authentication (gestion des utilisateurs et rôles)
+#### 🔧 **Dispositif ESP32**
 
-3. **Couche IoT**
-   - Dispositifs ESP32 avec capteurs DHT11
-   - Communication WiFi bidirectionnelle
+- Capteurs de température/humidité
+- Transmission WiFi des données
+- Configuration à distance
 
-#### 🔄 **Flux de Communication**
+#### � **Firebase (Centre de données)**
 
-- **Authentification Unifiée** : Les deux applications partagent le même système d'authentification Firebase
-- **Données Synchronisées** : Accès en temps réel aux mêmes données depuis mobile et web
-- **Configuration Dynamique** : Les ESP32 reçoivent leur configuration depuis Firebase
-- **Appairage Bluetooth** : Exclusif à l'application mobile pour configurer les ESP32
+- **Database** : Stockage en temps réel
+- **Authentication** : Gestion des utilisateurs
+- **Configuration** : Paramètres des appareils
 
 ## Diagramme de Classes
 
@@ -470,7 +442,7 @@ Capteurs ESP32 → WiFi → Base de Données Firebase → Application Flutter/We
 Écran Ruche → Bouton Bluetooth → Scanner Appareils → Sélectionner ESP32 → Envoyer Config → Appairage Terminé
 ```
 
-## Diagramme de Séquence - Page Liste des Ruchers
+## Diagramme de Séquence - Création d'un Rucher
 
 ```mermaid
 sequenceDiagram
@@ -506,87 +478,150 @@ sequenceDiagram
     Service-->>Screen: Succès
     Screen->>Screen: Actualise la liste
     Screen-->>User: Affiche le nouveau rucher
-
-    Note over User, Firebase: Modification d'un rucher existant
-    User->>Screen: Clique "Modifier" sur un rucher
-    Screen->>Dialog: showApiaryFormDialog(existingApiary)
-    Dialog-->>User: Affiche le formulaire pré-rempli
-    User->>Dialog: Modifie les données
-    User->>Dialog: Clique "Enregistrer"
-    Dialog->>Screen: Retourne Apiary modifié
-    Screen->>Provider: Récupère userId
-    Provider-->>Screen: Retourne userId
-    Screen->>Service: updateApiary(userId, oldName, newApiary)
-    Service->>Firebase: Met à jour les données
-    Firebase-->>Service: Confirmation
-    Service-->>Screen: Succès
-    Screen->>Screen: Actualise la liste
-    Screen-->>User: Affiche les modifications
-
-    Note over User, Firebase: Suppression d'un rucher
-    User->>Screen: Clique "Supprimer" sur un rucher
-    Screen-->>User: Affiche dialogue de confirmation
-    User->>Screen: Confirme la suppression
-    Screen->>Provider: Récupère userId
-    Provider-->>Screen: Retourne userId
-    Screen->>Service: deleteApiary(userId, apiaryName)
-    Service->>Firebase: Supprime le rucher et ses données
-    Firebase-->>Service: Confirmation
-    Service-->>Screen: Succès
-    Screen->>Screen: Actualise la liste
-    Screen-->>User: Rucher supprimé de la liste
-
-    Note over User, Firebase: Navigation vers les ruches
-    User->>Screen: Clique sur un rucher
-    Screen->>Provider: setCurrentApiary(apiaryName)
-    Provider->>Provider: Met à jour le contexte
-    Provider-->>Screen: Confirmation
-    Screen->>Screen: Navigation vers HiveListScreen
-    Screen-->>User: Affiche la page des ruches
 ```
 
 ## Intégration Matérielle ESP32
 
-### Implémentation Actuelle (basée sur WiFi)
+### Implémentation Actuelle (WiFi)
 
-L'appareil ESP32 utilise actuellement le WiFi pour la connectivité avec les fonctionnalités suivantes :
+L'appareil ESP32 utilise actuellement une connexion WiFi avec une architecture robuste et optimisée pour la surveillance continue des ruches.
 
 #### Composants Matériels
 
 - **Capteur DHT11** (GPIO 15) : Surveillance de la température et de l'humidité
-- **Bouton de Couvercle** (GPIO 22) : Détecte l'ouverture du couvercle de la ruche
-- **Bouton de Réinitialisation WiFi** (GPIO 33) : Fonctionnalité de réinitialisation d'usine
-- **Module WiFi** : WiFi ESP32 intégré pour la connectivité Internet
+- **Bouton de Couvercle** (GPIO 22) : Détecte l'ouverture du couvercle de la ruche avec debouncing
+- **Bouton de Réinitialisation WiFi** (GPIO 33) : Réinitialisation d'usine (pression longue 3+ secondes)
+- **Module WiFi ESP32** : Connectivité Internet avec gestion automatique des reconnexions
 
-#### Fonctionnalités Clés
+#### Architecture Logicielle Détaillée
 
-- **Gestion WiFi Automatique** : Bibliothèque WiFiManager avec portail captif
-- **Mise en Mémoire Tampon Hors Ligne** : Tampon circulaire pour la résilience de connectivité
-- **Configuration en Temps Réel** : Mises à jour des seuils et intervalles basées sur Firebase
-- **Détection d'Événements** : Classification intelligente des événements basée sur les seuils des capteurs
-- **Synchronisation Temporelle** : Horodatage basé sur NTP pour des mesures précises
+##### Gestion des Données et Résilience
 
-#### Structure de Données
+- **Tampon Circulaire** : Stockage de 5 mesures maximum avec système FIFO
+- **Structure DataRecord** : Horodatage (DD-MM-YYYY_HH:MM) + température + humidité
+- **Transmission Différée** : Envoi automatique lors du retour de connexion
+- **Synchronisation NTP** : Horodatage précis requis pour Firebase SSL
+
+##### Configuration Dynamique Firebase
+
+- **Seuils Configurables** :
+  - `tempThreshold` (défaut: 30°C)
+  - `humThreshold` (défaut: 80%)
+  - `interval` (défaut: 60000ms)
+  - `notifyEnabled` (défaut: true)
+- **Mise à Jour en Temps Réel** : Récupération des constantes à chaque cycle
+- **Path Firebase** : `userID/rucherName/rucheName/constants/`
+
+##### Détection d'Événements Intelligente
+
+- **Types d'événements** :
+  - `"data"` : Mesure normale dans les seuils
+  - `"temp_event"` : Température > seuil
+  - `"hum_event"` : Humidité > seuil
+  - `"both_event"` : Les deux seuils dépassés
+  - `"cover_opened"` : Ouverture du couvercle détectée
+
+##### Gestion de l'Alimentation et Connexion
+
+- **WiFiManager** : Portail captif automatique "ESP32-Config"
+- **Reconnexion Automatique** : Gestion des coupures réseau
+- **Debouncing Matériel** : 50ms pour tous les boutons
+- **Authentification Firebase** : Anonyme avec gestion des tokens
+
+#### Identification et Configuration Actuelle
 
 ```cpp
-struct DataRecord {
-    char timestamp[17];  // Format DD-MM-YYYY_HH:MM
-    int temp;           // Température en Celsius
-    int hum;            // Pourcentage d'humidité
-};
+// Configuration hardcodée (à remplacer par Bluetooth)
+const char *userID = "AuCwrs4JriWNk3jserhfih2lR5j2";
+const char *rucherName = "rucher_TEST";
+const char *rucheName = "ruche_TEST";
 ```
 
-### Architecture du Code ESP32
+#### Contraintes de Mémoire Actuelles
+
+**État actuel de l'utilisation mémoire :**
+
+- **Mémoire programme** : 2,040,831 bytes (155% de 1,310,720 bytes) ❌
+- **Variables globales** : 65,544 bytes (20% de 327,680 bytes) ✅
+- **Mémoire locale disponible** : 262,136 bytes ✅
+
+**Problème identifié :** Le sketch dépasse la capacité de stockage de programme, empêchant l'ajout de fonctionnalités Bluetooth supplémentaires.
+
+#### Optimisations Nécessaires pour Bluetooth
+
+**Stratégies d'optimisation recommandées :**
+
+1. **Réduction des Strings** : Utiliser F() macros pour stocker les chaînes en Flash
+2. **Optimisation Firebase** : Réduire la taille des buffers internes
+3. **Code Conditionnel** : Compilation conditionnelle des fonctionnalités debug
+4. **Bibliothèques Allégées** : Remplacer WiFiManager par une implémentation minimaliste
+5. **Compression JSON** : Optimiser la structure des données transmises
+
+### Intégration Bluetooth (Théorique)
+
+#### Défis Techniques Identifiés
+
+**Contrainte Mémoire Critique :**
+
+- Le sketch actuel atteint 155% de la capacité de stockage
+- L'ajout de `BluetoothSerial` et `ArduinoJson` aggraverait le dépassement
+- Optimisation majeure requise avant implémentation Bluetooth
+
+#### Configuration Bluetooth Théorique
+
+**Données à Recevoir via Bluetooth :**
+
+```json
+{
+  "userID": "AuCwrs4JriWNk3jserhfih2lR5j2",
+  "rucherName": "Mon_Rucher_Principal",
+  "rucheName": "Ruche_Nord_01",
+  "wifiSSID": "MonReseauWiFi",
+  "wifiPassword": "MotDePasse123",
+  "firebaseApiKey": "AIzaSy...",
+  "databaseUrl": "https://esp32-bd-8ac4d-default-rtdb..."
+}
+```
+
+**Processus d'Appairage Théorique :**
+
+1. **Mode Découverte** : ESP32 démarre en mode Bluetooth discoverable
+2. **Réception Config** : Application mobile envoie JSON de configuration
+3. **Validation** : ESP32 vérifie et parse les données reçues
+4. **Persistance EEPROM** : Sauvegarde pour les redémarrages
+5. **Connexion WiFi** : Tentative de connexion avec nouveaux paramètres
+6. **Confirmation** : Retour de statut vers l'application mobile
+
+#### Impact sur l'Architecture Firebase
+
+**Paths Dynamiques après Bluetooth :**
 
 ```cpp
-// Composants principaux
-- WiFiManager: Connexion WiFi automatique avec portail captif
-- Client Firebase: Intégration de base de données en temps réel
-- SimpleDHT: Acquisition de données de capteur
-- Tampon Circulaire: Stockage de données hors ligne
-- Gestionnaires de Boutons: Détection de couvercle et réinitialisation WiFi
-- Synchronisation de Configuration: Gestion de seuils à distance
+// Avant (hardcodé)
+String path = "AuCwrs4JriWNk3jserhfih2lR5j2/rucher_TEST/ruche_TEST/measurements/";
+
+// Après (configuré via Bluetooth)
+String path = String(userID) + "/" + String(rucherName) + "/" + String(rucheName) + "/measurements/";
 ```
+
+**Flexibilité Apportée :**
+
+- **Multi-Utilisateur** : Support de plusieurs comptes Firebase
+- **Multi-Rucher** : Gestion de plusieurs ruchers par utilisateur
+- **Multi-Ruche** : Configuration spécifique par ruche
+- **Reconfiguration** : Changement d'affectation sans reprogrammation
+
+#### Optimisations Prioritaires
+
+**Pour libérer ~700KB de mémoire programme :**
+
+1. **WiFiManager → Custom** : Réduction de ~200KB
+2. **Firebase Optimized** : Réduction de ~150KB
+3. **String Optimization** : Réduction de ~100KB
+4. **Code Cleanup** : Réduction de ~100KB
+5. **Library Updates** : Réduction de ~150KB
+
+**Résultat attendu :** Mémoire programme ~85% permettant l'ajout Bluetooth
 
 ## Intégration Bluetooth (Théorique)
 
@@ -609,105 +644,44 @@ dependencies:
 
 ##### BluetoothService
 
-```dart
-class BluetoothService {
-  static const String SERVICE_UUID = "12345678-1234-1234-1234-123456789abc";
-  static const String CONFIG_CHARACTERISTIC = "87654321-4321-4321-4321-cba987654321";
+**Objectif** : Gérer la communication Bluetooth avec les dispositifs ESP32
 
-  Future<List<BluetoothDevice>> scanForESP32Devices() async {
-    // Scanner les appareils avec identifiant ESP32
-  }
-
-  Future<bool> connectToDevice(BluetoothDevice device) async {
-    // Établir la connexion Bluetooth
-  }
-
-  Future<bool> sendConfiguration(BluetoothConfig config) async {
-    // Envoyer la configuration JSON via la caractéristique Bluetooth
-  }
-}
-```
+- Scanner et découvrir les appareils ESP32 disponibles
+- Établir et maintenir les connexions Bluetooth
+- Envoyer la configuration JSON aux ESP32 via les caractéristiques Bluetooth
+- Gérer les erreurs de connexion et les timeouts
 
 ##### BluetoothConfig
 
-```dart
-class BluetoothConfig {
-  final String userId;
-  final String apiaryName;
-  final String hiveName;
-  final String firebaseApiKey;
-  final String databaseUrl;
-  final String wifiSSID;
-  final String wifiPassword;
+**Objectif** : Structure de données pour la configuration des ESP32
 
-  Map<String, dynamic> toJson() => {
-    'userId': userId,
-    'apiaryName': apiaryName,
-    'hiveName': hiveName,
-    'firebaseApiKey': firebaseApiKey,
-    'databaseUrl': databaseUrl,
-    'wifiSSID': wifiSSID,
-    'wifiPassword': wifiPassword,
-  };
-}
-```
+- Contenir toutes les informations nécessaires pour configurer un ESP32
+- Inclure les identifiants Firebase (userId, apiaryName, hiveName)
+- Stocker les credentials WiFi (SSID, mot de passe)
+- Fournir les clés d'API Firebase et URL de base de données
+- Sérialiser les données en JSON pour transmission
 
 ##### BluetoothPairingDialog
 
-```dart
-class BluetoothPairingDialog extends StatefulWidget {
-  final String userId;
-  final String apiaryName;
-  final String hiveName;
+**Objectif** : Interface utilisateur pour le processus d'appairage
 
-  // Interface utilisateur pour :
-  // - Scanner les appareils ESP32
-  // - Afficher les appareils disponibles avec la force du signal
-  // - Saisie des identifiants WiFi
-  // - Indicateur de progression d'appairage
-  // - Retour de succès/échec
-}
-```
+- Afficher une liste des appareils ESP32 détectés avec leur signal
+- Permettre la sélection d'un dispositif spécifique
+- Collecter les informations WiFi de l'utilisateur
+- Afficher le progrès de l'appairage en temps réel
+- Confirmer le succès ou afficher les erreurs d'appairage
 
 #### 3. Intégration UI
 
 ##### Modifications de HiveListScreen
 
-```dart
-class HiveListScreen extends StatelessWidget {
-  Widget _buildHiveCard(Hive hive) {
-    return Card(
-      child: Column(
-        children: [
-          // ...informations existantes de la ruche...
+**Objectif** : Ajouter les fonctionnalités Bluetooth à l'écran des ruches
 
-          // Bouton d'appairage Bluetooth
-          ElevatedButton.icon(
-            icon: Icon(hive.isConnected ? Icons.bluetooth_connected : Icons.bluetooth),
-            label: Text(hive.isConnected ? 'Connecté' : 'Coupler ESP32'),
-            onPressed: () => _showBluetoothPairingDialog(hive),
-          ),
-
-          // Statut de connexion
-          if (hive.isConnected)
-            Text('Dernière connexion: ${_formatLastConnection(hive.lastConnection)}'),
-        ],
-      ),
-    );
-  }
-
-  void _showBluetoothPairingDialog(Hive hive) {
-    showDialog(
-      context: context,
-      builder: (context) => BluetoothPairingDialog(
-        userId: context.read<HierarchyProvider>().context.userId!,
-        apiaryName: context.read<HierarchyProvider>().context.apiaryName!,
-        hiveName: hive.name,
-      ),
-    );
-  }
-}
-```
+- Afficher le statut de connexion Bluetooth pour chaque ruche
+- Intégrer un bouton d'appairage pour les ruches non connectées
+- Montrer l'indicateur de connexion active avec horodatage
+- Déclencher le dialogue d'appairage lors du clic sur le bouton
+- Mettre à jour l'interface après un appairage réussi
 
 ### Modifications Matérielles ESP32
 
@@ -722,111 +696,52 @@ BluetoothSerial SerialBT;
 
 #### 2. Gestionnaire de Configuration Bluetooth
 
-```cpp
-void handleBluetoothConfig() {
-  if (SerialBT.available()) {
-    String configJson = SerialBT.readString();
+**Objectif** : Recevoir et traiter la configuration envoyée par l'application mobile
 
-    DynamicJsonDocument doc(1024);
-    deserializeJson(doc, configJson);
-
-    // Extraire la configuration
-    String newUserId = doc["userId"];
-    String newApiaryName = doc["apiaryName"];
-    String newHiveName = doc["hiveName"];
-    String newWifiSSID = doc["wifiSSID"];
-    String newWifiPassword = doc["wifiPassword"];
-
-    // Mettre à jour les variables globales
-    userID = newUserId.c_str();
-    rucherName = newApiaryName.c_str();
-    rucheName = newHiveName.c_str();
-
-    // Sauvegarder en EEPROM pour la persistance
-    saveConfigToEEPROM();
-
-    // Se connecter au nouveau WiFi
-    connectToWiFi(newWifiSSID, newWifiPassword);
-
-    // Envoyer la confirmation
-    SerialBT.println("CONFIG_RECEIVED_OK");
-  }
-}
-```
+- Écouter les données JSON entrantes via Bluetooth
+- Parser et valider la configuration reçue
+- Extraire les paramètres WiFi et Firebase
+- Sauvegarder la configuration en EEPROM pour persistance
+- Confirmer la réception à l'application mobile
 
 #### 3. Fonction Setup Améliorée
 
-```cpp
-void setup() {
-  // ...configuration existante...
+**Objectif** : Initialiser le module Bluetooth au démarrage
 
-  // Initialiser Bluetooth
-  SerialBT.begin("ESP32_Hive_" + String(WiFi.macAddress()));
-
-  // Charger la configuration sauvegardée depuis l'EEPROM
-  loadConfigFromEEPROM();
-
-  // Démarrer en mode appairage si pas configuré
-  if (!isConfigured()) {
-    startPairingMode();
-  }
-}
-```
+- Démarrer le service Bluetooth Serial avec un nom identifiable
+- Charger la configuration existante depuis l'EEPROM
+- Détecter si l'appareil est déjà configuré
+- Basculer en mode appairage si nécessaire
 
 #### 4. Mode Appairage
 
-```cpp
-void startPairingMode() {
-  Serial.println("Démarrage du mode d'appairage Bluetooth...");
+**Objectif** : Gérer l'état d'attente de configuration
 
-  // Faire clignoter la LED pour indiquer le mode appairage
-  // Attendre la configuration Bluetooth
-  while (!isConfigured()) {
-    handleBluetoothConfig();
-    delay(100);
-  }
-
-  Serial.println("Configuration reçue, connexion au WiFi...");
-}
-```
+- Indiquer visuellement que l'appareil est en mode appairage
+- Rester en écoute des commandes Bluetooth
+- Traiter la configuration reçue
+- Passer en mode normal après configuration réussie
 
 ### Mises à Jour du Schéma de Base de Données
 
 #### Extensions du Modèle Hive
 
-```dart
-class Hive {
-  // ...champs existants...
+**Objectif** : Étendre le modèle de données pour supporter le Bluetooth
 
-  final String? esp32MacAddress;    // Adresse MAC de l'ESP32 appairé
-  final bool isConnected;           // Statut de connexion actuel
-  final DateTime? lastConnection;   // Horodatage de dernière vue
-  final String? firmwareVersion;    // Version du firmware ESP32
-  final int? batteryLevel;          // Pourcentage de batterie (si applicable)
-
-  // ...méthodes existantes...
-}
-```
+- Ajouter l'adresse MAC de l'ESP32 appairé
+- Inclure le statut de connexion en temps réel
+- Stocker l'horodatage de la dernière connexion
+- Enregistrer la version du firmware ESP32
+- Optionnellement tracker le niveau de batterie
 
 #### Extensions de Structure Firebase
 
-```
-users/
-  {uid}/
-    {apiaryName}/
-      {hiveName}/
-        name: string
-        createdAt: timestamp
-        esp32Config/
-          macAddress: string
-          isConnected: boolean
-          lastConnection: timestamp
-          firmwareVersion: string
-          batteryLevel: number
-        measurements/
-          {timestamp}/...
-        constants/...
-```
+**Objectif** : Adapter la base de données pour les configurations ESP32
+
+- Créer une section esp32Config sous chaque ruche
+- Stocker les informations de connexion Bluetooth
+- Maintenir l'historique des connexions
+- Permettre le suivi des mises à jour firmware
 
 ## Flux d'Appairage Bluetooth de l'Utilisateur
 
@@ -935,67 +850,123 @@ L'application web Spring Boot fournit une interface utilisateur complète pour l
 
 ### Structure Hiérarchique Actuelle
 
+```json
 {
-"users": {
-"{uid}": {
-"profile": {
-"email": "string",
-"role": "user|admin",
-"createdAt": "timestamp",
-"lastLogin": "timestamp"
-},
-"{apiaryName}": {
-"description": "string",
-"address": "string",
-"createdAt": "timestamp",
-"updatedAt": "timestamp",
-"{hiveName}": {
-"name": "string",
-"createdAt": "timestamp",
-"esp32Config": {
-"macAddress": "string",
-"isConnected": "boolean",
-"lastConnection": "timestamp",
-"firmwareVersion": "string"
-},
-"measurements": {
-"{DD-MM-YYYY_HH:MM}": {
-"data_package": {
-"temperature": "number",
-"humidity": "number"
-},
-"type": "data|temp_event|hum_event|both_event|cover_opened",
-"isEventType": "boolean"
+  "user_id": {
+    "apiary_name": {
+      "address": "string",
+      "description": "string",
+      "hive_name": {
+        "constants": {
+          "humidity": 80,
+          "interval": 60000,
+          "notify": true,
+          "temperature": 30
+        },
+        "measurements": {
+          "20-09-2025_09:10": {
+            "data_package": {
+              "humidity": 70,
+              "temperature": 24
+            },
+            "type": "data"
+          }
+        }
+      }
+    }
+  }
 }
-},
-"constants": {
-"temperature": "number",
-"humidity": "number",
-"notify": "boolean",
-"interval": "number"
-}
-}
-}
-}
-},
-"admin": {
-"userManagement": {
-"{uid}": {
-"email": "string",
-"role": "string",
-"createdBy": "string",
-"createdAt": "timestamp",
-"isActive": "boolean"
-}
-},
-"systemStats": {
-"totalUsers": "number",
-"totalApiaries": "number",
-"totalHives": "number",
-"activeDevices": "number"
-}
-}
-}
+```
+
+### Explication de la Structure
+
+#### 🏗️ **Organisation Hiérarchique**
+
+```
+user_id/                    ← Identifiant unique de l'utilisateur
+├── apiary_name/           ← Nom du rucher
+│   ├── address            ← Adresse du rucher
+│   ├── description        ← Description du rucher
+│   └── hive_name/         ← Nom de la ruche
+│       ├── constants/     ← Configuration de la ruche
+│       │   ├── humidity   ← Seuil d'humidité (%)
+│       │   ├── interval   ← Intervalle de mesure (ms)
+│       │   ├── notify     ← Notifications activées
+│       │   └── temperature← Seuil de température (°C)
+│       └── measurements/  ← Données des capteurs
+│           └── timestamp/ ← Format: DD-MM-YYYY_HH:MM
+│               ├── data_package/
+│               │   ├── humidity    ← Humidité mesurée
+│               │   └── temperature ← Température mesurée
+│               └── type            ← Type: "data" | "event"
+```
+
+#### 📊 **Types de Données et Contraintes**
+
+| Champ         | Type    | Description                  | Exemple                                                         | Contraintes ESP32          |
+| ------------- | ------- | ---------------------------- | --------------------------------------------------------------- | -------------------------- |
+| `user_id`     | string  | ID Firebase de l'utilisateur | "AuCwrs4JriWNk3jserhfih2lR5j2"                                  | Hardcodé actuellement      |
+| `apiary_name` | string  | Nom du rucher                | "rucher_TEST"                                                   | Hardcodé actuellement      |
+| `address`     | string  | Adresse physique             | "123 Rue des Abeilles"                                          | Géré par les apps          |
+| `description` | string  | Description du rucher        | "Rucher de production"                                          | Géré par les apps          |
+| `hive_name`   | string  | Nom de la ruche              | "ruche_TEST"                                                    | Hardcodé actuellement      |
+| `humidity`    | number  | Seuil d'humidité (%)         | 80                                                              | Configurable en temps réel |
+| `temperature` | number  | Seuil de température (°C)    | 30                                                              | Configurable en temps réel |
+| `interval`    | number  | Intervalle de mesure (ms)    | 60000                                                           | Configurable en temps réel |
+| `notify`      | boolean | Notifications activées       | true                                                            | Configurable en temps réel |
+| `timestamp`   | string  | Horodatage des mesures       | "20-09-2025_09:10"                                              | Format NTP synchronisé     |
+| `type`        | string  | Type d'événement             | "data", "temp_event", "hum_event", "both_event", "cover_opened" | Déterminé par ESP32        |
+
+#### 🔧 **Logique des Types d'Événements ESP32**
+
+**Classification automatique basée sur les seuils :**
+
+- `"data"` : Température ≤ seuil ET Humidité ≤ seuil (mesure normale)
+- `"temp_event"` : Température > seuil ET Humidité ≤ seuil
+- `"hum_event"` : Température ≤ seuil ET Humidité > seuil
+- `"both_event"` : Température > seuil ET Humidité > seuil (alerte critique)
+- `"cover_opened"` : Événement bouton couvercle (temperature=0, humidity=0)
+
+#### 📡 **Flux de Configuration ESP32**
+
+**Path de récupération des constantes :**
+
+```
+{userID}/{rucherName}/{rucheName}/constants/
+├── temperature    ← ESP32 lit et applique
+├── humidity       ← ESP32 lit et applique
+├── interval       ← ESP32 lit et applique
+└── notify         ← ESP32 lit et applique
+```
+
+**Path d'envoi des mesures :**
+
+```
+{userID}/{rucherName}/{rucheName}/measurements/{timestamp}/
+├── data_package/
+│   ├── temperature ← Valeur capteur DHT11
+│   └── humidity    ← Valeur capteur DHT11
+└── type           ← Classification automatique
+```
+
+#### 💾 **Gestion du Tampon Circulaire ESP32**
+
+**Structure interne ESP32 :**
+
+```cpp
+struct DataRecord {
+    char timestamp[17];  // "DD-MM-YYYY_HH:MM"
+    int temp;           // Température DHT11
+    int hum;            // Humidité DHT11
+};
+DataRecord buffer[5]; // Tampon de 5 mesures max
+```
+
+**Résilience offline :**
+
+- Stockage local si Firebase indisponible
+- Transmission FIFO au retour de connexion
+- Overwrite des anciennes données si tampon plein
 
 ````
 

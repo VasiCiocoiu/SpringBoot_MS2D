@@ -19,8 +19,8 @@ WiFiManager wifiManager;
 // Authentication and user identification
 bool signupOK = false;
 const char *userID = "AuCwrs4JriWNk3jserhfih2lR5j2"; // Firebase user ID
-const char *rucherName = "rucher_TEST";              // Apiary name (French: rucher)
-const char *rucheName = "ruche_TEST";                // Config name (French: ruche)
+const char *rucherName = "rucher_TEST";              // Apiary name
+const char *rucheName = "ruche_TEST";                // Config name
 
 // DHT11 sensor on GPIO 15
 SimpleDHT11 dht11(15);
