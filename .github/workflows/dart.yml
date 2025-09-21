@@ -15,8 +15,8 @@ jobs:
 
       # Installer Flutter
      - uses: subosito/flutter-action@v2
-  with:
-    flutter-version: '3.10.6'  # Flutter stable qui inclut Dart 3.6+
+      with:
+        flutter-version: '3.10.6'  # Flutter stable qui inclut Dart 3.6+
 
 
       # Installer les dépendances
