@@ -4,14 +4,15 @@
 
 1. [Vue d'ensemble du Projet](#vue-densemble-du-projet)
 2. [Architecture du Système](#architecture-du-système)
-3. [Diagramme de Classes](#diagramme-de-classes)
-4. [Flux de Données](#flux-de-données)
-5. [Diagramme de Séquence - Création d'un Rucher](#diagramme-de-séquence---création-dun-rucher)
-6. [Intégration Matérielle ESP32](#intégration-matérielle-esp32)
-7. [Intégration Bluetooth (Théorique)](#intégration-bluetooth-théorique)
-8. [Structure de la Base de Données Firebase](#structure-de-la-base-de-données-firebase)
-9. [Référence API](#référence-api)
-10. [Guide de Développement](#guide-de-développement)
+3. [Diagramme de Cas d'Usage](#diagramme-de-cas-dusage)
+4. [Diagramme de Classes](#diagramme-de-classes)
+5. [Flux de Données](#flux-de-données)
+6. [Diagramme de Séquence - Création d'un Rucher](#diagramme-de-séquence---création-dun-rucher)
+7. [Intégration Matérielle ESP32](#intégration-matérielle-esp32)
+8. [Intégration Bluetooth (Théorique)](#intégration-bluetooth-théorique)
+9. [Structure de la Base de Données Firebase](#structure-de-la-base-de-données-firebase)
+10. [Référence API](#référence-api)
+11. [Guide de Développement](#guide-de-développement)
 
 ## Vue d'ensemble du Projet
 
@@ -93,6 +94,256 @@ Le système **Beemo** est composé de **3 applications principales** qui communi
 - **Database** : Stockage en temps réel
 - **Authentication** : Gestion des utilisateurs
 - **Configuration** : Paramètres des appareils
+
+## Diagramme de Cas d'Usage
+
+Le diagramme de cas d'usage présente les différentes interactions possibles entre les acteurs du système Beemo et les fonctionnalités disponibles selon les applications utilisées.
+
+```mermaid
+graph TB
+    subgraph "Système Beemo - Cas d'Usage"
+        %% Acteurs
+        User[👤 Utilisateur<br/>Standard]
+        Admin[👨‍💼 Administrateur]
+        ESP32[🔧 Dispositif ESP32]
+
+        subgraph "Application Mobile Flutter"
+            %% Authentification Mobile
+            LoginMobile[🔐 Se connecter<br/>via Mobile]
+            LogoutMobile[🚪 Se déconnecter<br/>Mobile]
+
+            %% Gestion des données Mobile
+            ViewApiariesMobile[📋 Consulter<br/>les Ruchers]
+            CreateApiaryMobile[➕ Créer<br/>un Rucher]
+            EditApiaryMobile[✏️ Modifier<br/>un Rucher]
+            DeleteApiaryMobile[🗑️ Supprimer<br/>un Rucher]
+
+            ViewHivesMobile[🏠 Consulter<br/>les Ruches]
+            CreateHiveMobile[➕ Créer<br/>une Ruche]
+            EditHiveMobile[✏️ Modifier<br/>une Ruche]
+            DeleteHiveMobile[🗑️ Supprimer<br/>une Ruche]
+
+            %% Surveillance Mobile
+            ViewMeasurementsMobile[📊 Consulter<br/>les Mesures]
+            ViewGraphsMobile[📈 Visualiser<br/>les Graphiques]
+            ConfigureThresholds[⚙️ Configurer<br/>les Seuils]
+            ViewEvents[🚨 Consulter<br/>les Événements]
+
+            %% Bluetooth Mobile (Théorique)
+            PairESP32[📶 Apparier<br/>un ESP32]
+            ConfigureESP32[🔧 Configurer<br/>un ESP32]
+            ViewConnectionStatus[📡 Voir Statut<br/>Connexion ESP32]
+        end
+
+        subgraph "Application Web Spring Boot"
+            %% Authentification Web
+            LoginWeb[🔐 Se connecter<br/>via Web]
+            LogoutWeb[🚪 Se déconnecter<br/>Web]
+
+            %% Gestion des données Web
+            ViewDashboard[📊 Consulter<br/>le Tableau de Bord]
+            ViewApiariesWeb[📋 Consulter<br/>les Ruchers Web]
+            ManageApiariesWeb[⚙️ Gérer<br/>les Ruchers Web]
+            ViewHivesWeb[🏠 Consulter<br/>les Ruches Web]
+            ManageHivesWeb[⚙️ Gérer<br/>les Ruches Web]
+            ViewMeasurementsWeb[📊 Consulter<br/>les Mesures Web]
+
+            %% Administration Web
+            CreateUserAccounts[👥 Créer<br/>Comptes Utilisateurs]
+            ManageUserRoles[🛡️ Gérer<br/>les Rôles]
+            ViewSystemStats[📈 Consulter<br/>Statistiques Système]
+            MonitorSystem[👁️ Monitoring<br/>Global]
+        end
+
+        subgraph "Dispositif ESP32"
+            %% Fonctionnalités ESP32
+            CollectSensorData[🌡️ Collecter<br/>Données Capteurs]
+            SendDataToFirebase[📤 Envoyer Données<br/>vers Firebase]
+            ReceiveConfiguration[📥 Recevoir<br/>Configuration]
+            DetectEvents[🚨 Détecter<br/>Événements]
+            ManageWiFiConnection[📶 Gérer<br/>Connexion WiFi]
+            BufferDataOffline[💾 Tamponner<br/>Données Hors Ligne]
+            SyncWhenOnline[🔄 Synchroniser<br/>au Retour Connexion]
+        end
+    end
+
+    %% Relations Utilisateur Standard - Mobile
+    User -.-> LoginMobile
+    User -.-> LogoutMobile
+    User -.-> ViewApiariesMobile
+    User -.-> CreateApiaryMobile
+    User -.-> EditApiaryMobile
+    User -.-> DeleteApiaryMobile
+    User -.-> ViewHivesMobile
+    User -.-> CreateHiveMobile
+    User -.-> EditHiveMobile
+    User -.-> DeleteHiveMobile
+    User -.-> ViewMeasurementsMobile
+    User -.-> ViewGraphsMobile
+    User -.-> ConfigureThresholds
+    User -.-> ViewEvents
+    User -.-> PairESP32
+    User -.-> ConfigureESP32
+    User -.-> ViewConnectionStatus
+
+    %% Relations Utilisateur Standard - Web
+    User -.-> LoginWeb
+    User -.-> LogoutWeb
+    User -.-> ViewDashboard
+    User -.-> ViewApiariesWeb
+    User -.-> ManageApiariesWeb
+    User -.-> ViewHivesWeb
+    User -.-> ManageHivesWeb
+    User -.-> ViewMeasurementsWeb
+
+    %% Relations Administrateur - Web uniquement
+    Admin -.-> LoginWeb
+    Admin -.-> LogoutWeb
+    Admin -.-> ViewDashboard
+    Admin -.-> ViewApiariesWeb
+    Admin -.-> ManageApiariesWeb
+    Admin -.-> ViewHivesWeb
+    Admin -.-> ManageHivesWeb
+    Admin -.-> ViewMeasurementsWeb
+    Admin -.-> CreateUserAccounts
+    Admin -.-> ManageUserRoles
+    Admin -.-> ViewSystemStats
+    Admin -.-> MonitorSystem
+
+    %% Relations ESP32 - Automatiques
+    ESP32 -.-> CollectSensorData
+    ESP32 -.-> SendDataToFirebase
+    ESP32 -.-> ReceiveConfiguration
+    ESP32 -.-> DetectEvents
+    ESP32 -.-> ManageWiFiConnection
+    ESP32 -.-> BufferDataOffline
+    ESP32 -.-> SyncWhenOnline
+
+    %% Styles
+    classDef userActor fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000
+    classDef adminActor fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
+    classDef deviceActor fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
+    classDef mobileUseCase fill:#e8f5e8,stroke:#4caf50,stroke-width:1px,color:#000
+    classDef webUseCase fill:#fff8e1,stroke:#ff9800,stroke-width:1px,color:#000
+    classDef deviceUseCase fill:#fce4ec,stroke:#e91e63,stroke-width:1px,color:#000
+    classDef adminUseCase fill:#ffebee,stroke:#f44336,stroke-width:2px,color:#000
+
+    class User userActor
+    class Admin adminActor
+    class ESP32 deviceActor
+
+    class LoginMobile,LogoutMobile,ViewApiariesMobile,CreateApiaryMobile,EditApiaryMobile,DeleteApiaryMobile,ViewHivesMobile,CreateHiveMobile,EditHiveMobile,DeleteHiveMobile,ViewMeasurementsMobile,ViewGraphsMobile,ConfigureThresholds,ViewEvents,PairESP32,ConfigureESP32,ViewConnectionStatus mobileUseCase
+
+    class LoginWeb,LogoutWeb,ViewDashboard,ViewApiariesWeb,ManageApiariesWeb,ViewHivesWeb,ManageHivesWeb,ViewMeasurementsWeb webUseCase
+
+    class CreateUserAccounts,ManageUserRoles,ViewSystemStats,MonitorSystem adminUseCase
+
+    class CollectSensorData,SendDataToFirebase,ReceiveConfiguration,DetectEvents,ManageWiFiConnection,BufferDataOffline,SyncWhenOnline deviceUseCase
+```
+
+### Description des Acteurs
+
+#### 👤 **Utilisateur Standard**
+
+**Rôle** : Apiculteur ou gestionnaire de ruches utilisant le système pour surveiller ses ruchers.
+
+**Accès** :
+
+- **Application Mobile** : Accès complet à toutes les fonctionnalités de surveillance
+- **Application Web** : Accès aux fonctionnalités de consultation et gestion (sans administration)
+
+**Permissions** :
+
+- Gérer ses propres ruchers et ruches
+- Consulter les données de ses capteurs
+- Configurer les seuils d'alerte
+- Apparier des dispositifs ESP32 (mobile uniquement)
+
+#### 👨‍💼 **Administrateur**
+
+**Rôle** : Responsable technique ou gestionnaire système avec privilèges étendus.
+
+**Accès** :
+
+- **Application Web** : Accès complet incluant les fonctionnalités d'administration
+- **Application Mobile** : Même accès qu'un utilisateur standard
+
+**Permissions spéciales** :
+
+- Créer et gérer les comptes utilisateurs
+- Assigner et modifier les rôles utilisateur
+- Consulter les statistiques système globales
+- Monitoring de l'ensemble du système
+
+#### 🔧 **Dispositif ESP32**
+
+**Rôle** : Capteur IoT autonome effectuant la surveillance physique des ruches.
+
+**Fonctionnement** :
+
+- **Automatique** : Collecte et transmission de données sans intervention
+- **Configurable** : Reçoit les paramètres via Firebase
+- **Résilient** : Gestion des pannes réseau avec tampon local
+
+### Cas d'Usage par Application
+
+#### 📱 **Application Mobile - Cas d'Usage Spécifiques**
+
+| Cas d'Usage                     | Description                                     | Priorité |
+| ------------------------------- | ----------------------------------------------- | -------- |
+| **Apparier un ESP32**           | Connexion Bluetooth pour configuration initiale | Haute    |
+| **Configurer un ESP32**         | Envoi des paramètres WiFi et Firebase           | Haute    |
+| **Voir Statut Connexion ESP32** | Monitoring de l'état des dispositifs            | Moyenne  |
+
+#### 🌐 **Application Web - Cas d'Usage Spécifiques**
+
+| Cas d'Usage                        | Description                             | Priorité |
+| ---------------------------------- | --------------------------------------- | -------- |
+| **Créer Comptes Utilisateurs**     | Administration des utilisateurs (Admin) | Haute    |
+| **Gérer les Rôles**                | Attribution des permissions (Admin)     | Haute    |
+| **Consulter Statistiques Système** | Vue d'ensemble globale (Admin)          | Moyenne  |
+| **Monitoring Global**              | Surveillance système (Admin)            | Moyenne  |
+
+#### 🔧 **ESP32 - Cas d'Usage Automatiques**
+
+| Cas d'Usage                          | Description                        | Fréquence                  |
+| ------------------------------------ | ---------------------------------- | -------------------------- |
+| **Collecter Données Capteurs**       | Lecture DHT11 température/humidité | Configurable (défaut: 60s) |
+| **Détecter Événements**              | Classification basée sur seuils    | À chaque mesure            |
+| **Tamponner Données Hors Ligne**     | Stockage local si pas de réseau    | Selon disponibilité réseau |
+| **Synchroniser au Retour Connexion** | Envoi du tampon stocké             | Au retour de connexion     |
+
+### Flux d'Interaction Principal
+
+```
+1. Utilisateur → Application Mobile/Web → Authentification Firebase
+2. Utilisateur → Gestion Ruchers/Ruches → Stockage Firebase
+3. ESP32 → Collecte Automatique → Envoi Firebase
+4. Utilisateur → Consultation Données → Visualisation Temps Réel
+5. Admin → Gestion Utilisateurs → Création/Attribution Rôles
+```
+
+### Différenciation des Accès
+
+#### **Fonctionnalités Communes (Mobile + Web)**
+
+- Authentification et gestion de session
+- CRUD ruchers et ruches
+- Consultation des mesures et visualisations
+- Configuration des seuils d'alerte
+
+#### **Exclusives Mobile**
+
+- Appairage Bluetooth ESP32
+- Configuration directe des dispositifs
+- Interface tactile optimisée
+
+#### **Exclusives Web**
+
+- Administration des utilisateurs (Admin uniquement)
+- Gestion des rôles et permissions (Admin uniquement)
+- Tableau de bord système global
+- Interface desktop avec graphiques avancés
 
 ## Diagramme de Classes
 
