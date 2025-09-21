@@ -1,0 +1,34 @@
+name: Flutter CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Récupérer le code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Installer Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0' # mets la version que tu utilises
+
+      # 3. Vérifier la version
+      - run: flutter --version
+
+      # 4. Installer les dépendances
+      - run: flutter pub get
+
+      # 5. Lancer l’analyse statique
+      - run: flutter analyze
+
+      # 6. Exécuter les tests
+      - run: flutter test
