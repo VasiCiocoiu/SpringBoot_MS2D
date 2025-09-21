@@ -1,31 +1,31 @@
-name: Flutter CI/CD
+name: Flutter CI
 
 on:
   push:
     branches: [ "main", "front" ]
   pull_request:
     branches: [ "main", "front" ]
-  workflow_dispatch:  # pour déclenchement manuel
+  workflow_dispatch:  # permet déclenchement manuel
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Récupérer le code du dépôt
+      # 1. Checkout du code
       - uses: actions/checkout@v4
 
-      # 2. Installer Flutter version stable compatible Dart 3.6+
+      # 2. Installer Flutter (Dart 3.6+ inclus)
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: 3.10.6
 
-      # 3. Vérifier les versions Flutter et Dart
+      # 3. Vérifier les versions Flutter et Dart pour debug
       - name: Check Flutter & Dart version
         run: flutter --version
 
-      # 4. Désactiver la télémétrie Flutter pour CI
+      # 4. Désactiver la télémétrie Flutter
       - name: Disable Flutter telemetry
         run: flutter --disable-telemetry
 
@@ -34,7 +34,7 @@ jobs:
         run: flutter pub get
         working-directory: esp32_monitoring
 
-      # 6. Analyse statique du code
+      # 6. Analyse du code
       - name: Analyze project
         run: flutter analyze
         working-directory: esp32_monitoring
@@ -43,15 +43,3 @@ jobs:
       - name: Run tests
         run: flutter test
         working-directory: esp32_monitoring
-
-      # 8. Build APK release
-      - name: Build APK
-        run: flutter build apk --release
-        working-directory: esp32_monitoring
-
-      # 9. Sauvegarder l’APK comme artefact GitHub
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-release-apk
-          path: esp32_monitoring/build/app/outputs/flutter-apk/app-release.apk
