@@ -1,4 +1,4 @@
-name: Flutter CI
+name: Flutter CI/CD
 
 on:
   push:
@@ -11,24 +11,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Récupérer le code du dépôt
       - uses: actions/checkout@v4
 
-      # Installer Flutter
-      - uses: subosito/flutter-action@v2
+      # 2. Installer Flutter (version compatible Dart 3.6+)
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.10.6'  # ou la version que tu utilises
+          flutter-version: 3.10.6
 
-      # Installer les dépendances
+      # 3. Installer les dépendances
       - name: Install dependencies
         run: flutter pub get
         working-directory: esp32_monitoring
 
-      # Analyse statique
-      - name: Analyze project source
+      # 4. Analyse statique du code
+      - name: Analyze project
         run: flutter analyze
         working-directory: esp32_monitoring
 
-      # Lancer les tests
+      # 5. Lancer les tests
       - name: Run tests
         run: flutter test
         working-directory: esp32_monitoring
+
+      # 6. (Optionnel) Build APK release
+      - name: Build APK
+        run: flutter build apk --release
+        working-directory: esp32_monitoring
+
+      # 7. (Optionnel) Sauvegarder l’APK comme artefact GitHub
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: esp32_monitoring/build/app/outputs/flutter-apk/app-release.apk
