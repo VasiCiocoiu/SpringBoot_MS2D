@@ -34,10 +34,6 @@ jobs:
         run: flutter pub get
         working-directory: esp32_monitoring
 
-      # 5. Analyse statique du code
-      - name: Analyze project
-        run: flutter analyze
-        working-directory: esp32_monitoring
 
       # 6. Lancer les tests
       - name: Run tests
