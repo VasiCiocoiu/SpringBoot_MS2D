@@ -1021,60 +1021,401 @@ L'app met à jour le statut de la ruche → Affiche le message de succès → Fe
 
 ### Vue d'ensemble
 
-L'application web Spring Boot fournit une interface utilisateur complète pour la gestion des ruchers via un navigateur web. Elle partage les mêmes données Firebase que l'application mobile mais offre des fonctionnalités d'administration supplémentaires.
+L'application web Spring Boot (`ruchesConnecteSpringboot`) fournit une interface utilisateur complète pour la gestion des ruchers via un navigateur web. Elle partage les mêmes données Firebase que l'application mobile mais offre des fonctionnalités d'administration supplémentaires.
 
-### Fonctionnalités Principales
+### Configuration et Déploiement
 
-#### Interface Utilisateur Standard
+#### Informations Projet
 
-- **Tableau de bord** : Vue d'ensemble des ruchers, ruches et données de capteurs
-- **Gestion des ruchers** : CRUD complet via interface web responsive
-- **Gestion des ruches** : Configuration et surveillance des ruches individuelles
-- **Visualisation de données** : Graphiques interactifs pour les mesures de température et humidité
-- **Gestion des seuils** : Configuration des alertes et paramètres par ruche
-- **Historique des événements** : Consultation des alertes et événements système
+- **Nom** : `ruchesConnecteSpringboot`
+- **Version** : `0.0.1-SNAPSHOT`
+- **Package** : `com.ruche`
+- **Java Version** : 21
+- **Spring Boot Version** : 3.5.4
+- **Packaging** : WAR (déployable sur Tomcat externe)
+- **Port** : 8080
 
-#### Fonctionnalités d'Administration (Rôle Admin)
+#### Dépendances Principales
 
-- **Création de comptes utilisateurs** : Interface pour créer de nouveaux utilisateurs Firebase
-- **Gestion des rôles** : Attribution et modification des rôles utilisateur (user/admin)
-- **Statistiques système** : Vue d'ensemble du nombre d'utilisateurs, ruchers, ruches actives
-- **Monitoring global** : Surveillance de l'activité système et des dispositifs connectés
+```xml
+<!-- Web Framework -->
+spring-boot-starter-web
+spring-boot-starter-thymeleaf
+spring-boot-starter-mail
+
+<!-- Sécurité -->
+spring-boot-starter-security
+
+<!-- Firebase -->
+firebase-admin (9.3.0)
+google-auth-library-oauth2-http (1.23.0)
+
+<!-- Développement -->
+spring-boot-devtools
+lombok
+
+<!-- Tests -->
+spring-boot-starter-test
+spring-security-test
+```
+
+#### Configuration Firebase
+
+```properties
+# Base de données Firebase
+firebase.database-url=https://esp32-bd-8ac4d-default-rtdb.europe-west1.firebasedatabase.app/
+
+# Fichier de service account
+firebase.credentials.classpath=/firebase/esp32-bd-service-account.json
+
+# API Key pour Firebase Auth REST
+firebase.apiKey=AIzaSyAgaAgBG95VTOu0ntyqpK5LkcBjPbli-n4
+
+# URL de redirection après connexion
+app.login.success-url=/ruchers
+```
 
 ### Architecture Technique
 
-#### Contrôleurs Spring Boot
+#### Structure des Packages
 
-- **WebAuthController** : Gestion de l'authentification Firebase
-- **AdminController** : Fonctionnalités d'administration réservées aux admins
-- **ApiaryWebController** : Gestion des ruchers via interface web
-- **HiveWebController** : Gestion des ruches et visualisation des données
-- **DashboardController** : Tableau de bord et statistiques
+```
+com.ruche.ruchesconnectespringboot/
+├── RuchesConnecteSpringbootApplication.java    # Point d'entrée
+├── ServletInitializer.java                     # Déploiement WAR
+├── controller/                                 # Contrôleurs MVC
+│   ├── ApiculteursController.java             # Gestion des utilisateurs
+│   ├── LoginController.java                   # Authentification
+│   ├── RuchersController.java                 # Gestion des ruchers
+│   └── RuchesController.java                  # Gestion des ruches
+├── firebase/                                   # Configuration Firebase
+│   ├── FirebaseConfig.java                    # Bean DatabaseReference
+│   └── FirebaseDbUtils.java                   # Utilitaires Firebase
+├── model/                                      # Modèles de données
+│   ├── Apiculteurs.java                       # Entité utilisateur
+│   ├── Ruchers.java                           # Entité rucher
+│   └── Ruches.java                            # Entité ruche + mesures
+├── repository/                                 # Interfaces repositories
+│   ├── ApiculteursRepository.java
+│   ├── RuchersRepository.java
+│   └── RuchesRepository.java
+├── security/                                   # Sécurité Firebase
+│   ├── FirebaseAuthenticationProvider.java
+│   ├── FirebaseAuthRestService.java
+│   ├── FirebaseUser.java
+│   └── SecurityConfig.java
+└── service/                                    # Services métier
+    ├── ApiculteursService.java
+    └── RucherService.java
+```
 
-#### Services
+#### Modèles de Données
 
-- **WebFirebaseService** : Interface avec Firebase pour les opérations web
-- **UserRoleService** : Gestion des rôles et permissions utilisateur
-- **DataVisualizationService** : Préparation des données pour les graphiques web
+##### Ruches.java - Structure Complète
 
-#### Sécurité
+```java
+public class Ruches {
+    // Propriétés principales
+    private String id;                       // "ruche_2"
+    private String address;                  // Adresse postale ou GPS
+    private String description;              // Notes libres
+    private Boolean notificationsEnabled;    // Activation notifications
+    private Long createdAt;                  // Timestamp création
+    private Long modifiedAt;                 // Timestamp modification
+    
+    // Configuration des constantes
+    private RucheConstants constants;
+    
+    // Mesures des capteurs
+    private Map<String, Measurement> measurements;
+    
+    // Classes imbriquées
+    public static class RucheConstants {
+        private Integer humidity;           // Seuil humidité
+        private Integer temperature;        // Seuil température
+        private Long interval;             // Intervalle mesures (ms)
+        private Boolean notify;            // Notifications activées
+    }
+    
+    public static class Measurement {
+        private String type;               // "data", "hum_event", "cover_opened"
+        private DataPackage data_package;  // Données capteurs
+    }
+    
+    public static class DataPackage {
+        private Integer humidity;          // Valeur humidité
+        private Integer temperature;       // Valeur température
+    }
+}
+```
 
-- **Authentification Firebase** : Utilise les mêmes comptes que l'application mobile
-- **Gestion des rôles** : Vérification des permissions pour les fonctionnalités admin
-- **Protection CSRF** : Sécurisation des formulaires web
-- **Sessions sécurisées** : Gestion des sessions utilisateur avec timeout
+##### Apiculteurs.java - Utilisateurs
+
+```java
+public class Apiculteurs {
+    private String id;              // UID Firebase
+    private String nom;             // Nom famille
+    private String prenom;          // Prénom
+    private String adresse;         // Adresse postale
+    private String email;           // Email Firebase
+    private String password;        // Mot de passe
+    private Long createdAt;         // Timestamp création
+    private Long modifiedAt;        // Timestamp modification
+}
+```
+
+##### Ruchers.java - Organisation
+
+```java
+public class Ruchers {
+    private String id;                      // Identifiant unique
+    private String nom;                     // Nom du rucher
+    private String address;                 // Adresse physique
+    private String description;             // Description
+    private Long createdAt;                 // Timestamp création
+    private Long updatedAt;                 // Timestamp modification
+    private Map<String, Ruches> ruches;     // Ruches du rucher
+}
+```
+
+#### Contrôleurs Principaux
+
+##### RuchesController - Gestion des Ruches
+
+**Endpoints disponibles :**
+
+- `GET /ruchers/{rucherId}/ruches` - Liste des ruches d'un rucher
+- `GET /ruchers/{rucherId}/ruches/{rucheId}` - Détail d'une ruche
+- `POST /ruchers/{rucherId}/ruches/{rucheId}/toggle-notifications` - Basculer notifications
+- `POST /ruchers/{rucherId}/ruches` - Créer/modifier ruche
+
+**Fonctionnalités spécialisées :**
+
+- Tri des mesures par timestamp avec format `dd-MM-yyyy_HH:mm`
+- Affichage des 20 dernières mesures pour les graphiques
+- Détection de la dernière mesure pour le statut actuel
+- Gestion des types d'événements (data, temp_event, hum_event, etc.)
+
+##### RuchersController - Gestion des Ruchers
+
+**Endpoints disponibles :**
+
+- `GET /ruchers` - Liste des ruchers de l'utilisateur connecté
+- `GET /ruchers/{rucherId}` - Détail d'un rucher
+- `POST /ruchers` - Créer un nouveau rucher
+- `PUT /ruchers/{rucherId}` - Modifier un rucher existant
+- `DELETE /ruchers/{rucherId}` - Supprimer un rucher
+
+##### ApiculteursController - Gestion Utilisateurs
+
+**Endpoints disponibles :**
+
+- `GET /apiculteurs` - Liste des utilisateurs (admin uniquement)
+- `POST /apiculteurs` - Créer un nouvel utilisateur
+- `PUT /apiculteurs/{id}` - Modifier un utilisateur
+- `DELETE /apiculteurs/{id}` - Supprimer un utilisateur
+
+#### Services Métier
+
+##### RucherService - Logique Métier Principal
+
+**Méthodes clés :**
+
+```java
+// Recherche ruche spécifique
+public Ruches findRucheBlocking(String uid, String rucherId, String rucheId)
+
+// Création/mise à jour ruche asynchrone
+public CompletableFuture<Void> upsertRucheAsync(String uid, String rucherId, Ruches ruche)
+
+// Gestion notifications
+public CompletableFuture<Void> toggleNotificationsAsync(String uid, String rucherId, String rucheId, boolean enabled)
+
+// Validation des clés Firebase
+public static boolean isValidKey(String key) // Interdit: [.#$\[\]/]
+
+// Gestion des ruchers
+public void upsertRucher(String uid, Ruchers rucher)
+```
+
+**Gestion des valeurs par défaut :**
+
+```java
+// Configuration par défaut des nouvelles ruches
+RucheConstants c = new RucheConstants();
+c.setTemperature(30);      // Seuil température 30°C
+c.setHumidity(80);         // Seuil humidité 80%
+c.setInterval(60000L);     // Mesures toutes les 60 secondes
+c.setNotify(Boolean.TRUE); // Notifications activées
+```
+
+#### Configuration Firebase
+
+##### FirebaseConfig - Initialisation
+
+```java
+@Configuration
+public class FirebaseConfig {
+    
+    @Value("${firebase.database-url}")
+    private String dbUrl;
+    
+    @Value("${firebase.credentials.classpath}")
+    private String credsPath;
+    
+    @Bean
+    public DatabaseReference firebaseRootRef() throws Exception {
+        // Chargement du service account depuis le classpath
+        InputStream in = getClass().getResourceAsStream(credsPath);
+        
+        FirebaseOptions opts = FirebaseOptions.builder()
+            .setCredentials(GoogleCredentials.fromStream(in))
+            .setDatabaseUrl(dbUrl)
+            .build();
+            
+        if (FirebaseApp.getApps().isEmpty()) {
+            FirebaseApp.initializeApp(opts);
+        }
+        
+        return FirebaseDatabase.getInstance().getReference();
+    }
+}
+```
+
+##### FirebaseDbUtils - Utilitaires
+
+**Opérations asynchrones :**
+
+```java
+// Lecture de données avec CompletableFuture
+public static <T> CompletableFuture<T> getValue(DatabaseReference ref, Class<T> clazz)
+
+// Écriture de données avec CompletableFuture
+public static CompletableFuture<Void> setValue(DatabaseReference ref, Object value)
+
+// Gestion des timeouts (8 secondes par défaut)
+private static <T> T join(CompletableFuture<T> f)
+```
+
+#### Sécurité et Authentification
+
+##### SecurityConfig - Configuration Spring Security
+
+**Fonctionnalités :**
+
+- Authentification Firebase via tokens JWT
+- Protection des endpoints par rôle utilisateur
+- Gestion des sessions web sécurisées
+- Redirection automatique vers `/login` si non authentifié
+- Redirection vers `/ruchers` après authentification réussie
+
+##### FirebaseAuthenticationProvider
+
+**Processus d'authentification :**
+
+1. Validation du token Firebase reçu
+2. Extraction des informations utilisateur (UID, email)
+3. Vérification des droits d'accès
+4. Création de l'objet `FirebaseUser` pour la session
+
+### Fonctionnalités Implémentées
+
+#### Gestion Hiérarchique
+
+- **Utilisateurs** → **Ruchers** → **Ruches** → **Mesures**
+- Navigation intuitive entre les niveaux
+- Bread-crumb pour la navigation contextuelle
+- Filtrage automatique par utilisateur connecté
+
+#### Surveillance en Temps Réel
+
+- Affichage des dernières mesures par ruche
+- Tri chronologique des données (format `dd-MM-yyyy_HH:mm`)
+- Indicateurs visuels pour les dépassements de seuils
+- Graphiques des 20 dernières mesures
+
+#### Gestion des Événements
+
+**Types d'événements supportés :**
+
+- `"data"` : Mesure normale (dans les seuils)
+- `"temp_event"` : Dépassement température uniquement
+- `"hum_event"` : Dépassement humidité uniquement
+- `"both_event"` : Dépassement température ET humidité
+- `"cover_opened"` : Ouverture du couvercle détectée
+
+#### Configuration Dynamique
+
+- Modification des seuils de température et humidité
+- Ajustement de l'intervalle de mesure ESP32
+- Activation/désactivation des notifications par ruche
+- Synchronisation automatique avec les dispositifs ESP32
+
+### Tests et Couverture
+
+#### Tests Actuels
+
+- **Test de contexte Spring Boot** : Vérification du démarrage de l'application
+- **Couverture limitée** : Seul le test de contexte est implémenté
+
+#### Tests Recommandés (à implémenter)
+
+```java
+// Tests unitaires recommandés
+@Test void testRucherServiceFindRuche()
+@Test void testRucherServiceUpsertRuche()
+@Test void testFirebaseConfigInitialization()
+@Test void testSecurityConfigAuthentication()
+
+// Tests d'intégration recommandés
+@Test void testRuchesControllerListRuches()
+@Test void testRuchersControllerCRUD()
+@Test void testFirebaseOperationsIntegration()
+```
 
 ### Différences avec l'Application Mobile
 
 | Fonctionnalité                   | Application Mobile    | Application Web        |
 | -------------------------------- | --------------------- | ---------------------- |
 | Appairage Bluetooth ESP32        | ✅ Disponible         | ❌ Non disponible      |
-| Création de comptes utilisateurs | ❌ Non disponible     | ✅ Admin uniquement    |
-| Gestion des rôles                | ❌ Non disponible     | ✅ Admin uniquement    |
+| Création de comptes utilisateurs | ❌ Non disponible     | ✅ Planifié (admin)    |
+| Gestion des rôles                | ❌ Non disponible     | ✅ Planifié (admin)    |
 | Surveillance en temps réel       | ✅ Optimisée mobile   | ✅ Interface desktop   |
 | Gestion CRUD ruchers/ruches      | ✅ Interface tactile  | ✅ Interface web       |
-| Visualisation de données         | ✅ Graphiques mobiles | ✅ Graphiques web      |
+| Visualisation de données         | ✅ Graphiques mobiles | ✅ Planifié (web)      |
 | Accès hors ligne                 | ✅ Tampon local       | ❌ Nécessite connexion |
+| Packaging                        | APK Android/iOS       | WAR déployable Tomcat  |
+
+### Commandes de Développement
+
+#### Développement Local
+
+```bash
+# Démarrage en mode développement
+./mvnw spring-boot:run
+
+# Compilation
+./mvnw clean compile
+
+# Tests
+./mvnw test
+
+# Package WAR
+./mvnw clean package
+```
+
+#### Déploiement Tomcat
+
+```bash
+# Génération du WAR
+./mvnw clean package
+
+# Déploiement dans Tomcat
+cp target/ruchesConnecteSpringboot-0.0.1-SNAPSHOT.war $TOMCAT_HOME/webapps/
+
+# Ou renommage pour contexte racine
+cp target/ruchesConnecteSpringboot-0.0.1-SNAPSHOT.war $TOMCAT_HOME/webapps/ROOT.war
+```
 
 ## Structure de la Base de Données Firebase
 
