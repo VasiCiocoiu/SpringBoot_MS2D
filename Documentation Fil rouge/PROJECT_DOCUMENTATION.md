@@ -13,6 +13,7 @@
 9. [Structure de la Base de Données Firebase](#structure-de-la-base-de-données-firebase)
 10. [Référence API](#référence-api)
 11. [Guide de Développement](#guide-de-développement)
+12. [CI/CD et Déploiement](#cicd-et-déploiement)
 
 ## Vue d'ensemble du Projet
 
@@ -1504,3 +1505,161 @@ void reportStatusToApp();
 ```
 
 Cette documentation fournit une vue d'ensemble complète du système actuel et de l'intégration Bluetooth théorique. Le diagramme de classes montre comment les nouveaux composants Bluetooth s'intégreraient avec l'architecture existante tout en maintenant une séparation claire des préoccupations.
+
+## CI/CD et Déploiement
+
+### Pipeline CI/CD Flutter
+
+Le projet Beemo utilise GitHub Actions pour automatiser les processus de construction, de test et de déploiement de l'application mobile Flutter. Le pipeline CI/CD est configuré pour s'exécuter sur les branches principales du projet.
+
+#### Configuration du Workflow
+
+Le fichier de workflow CI/CD est situé dans `.github/workflows/dart.yml` et définit les étapes suivantes :
+
+```yaml
+name: Flutter CI/CD
+
+on:
+  push:
+    branches: ["main", "front"]
+  pull_request:
+    branches: ["main", "front"]
+  workflow_dispatch:
+```
+
+#### Déclencheurs du Pipeline
+
+Le pipeline CI/CD se déclenche automatiquement dans les cas suivants :
+
+- **Push sur les branches** : `main` et `front`
+- **Pull Requests** : Vers les branches `main` et `front`
+- **Exécution manuelle** : Via l'interface GitHub Actions (`workflow_dispatch`)
+
+#### Étapes du Pipeline
+
+##### 1. **Environnement d'Exécution**
+
+```yaml
+runs-on: ubuntu-latest
+env:
+  FLUTTER_SUPPRESS_ANALYTICS: true
+```
+
+- Utilise Ubuntu Latest pour l'exécution
+- Désactive les analytics Flutter pour améliorer les performances
+
+##### 2. **Checkout du Code Source**
+
+```yaml
+- uses: actions/checkout@v4
+```
+
+- Récupère le code source depuis le repository GitHub
+
+##### 3. **Configuration de Flutter**
+
+```yaml
+- name: Setup Flutter
+  uses: subosito/flutter-action@v2
+  with:
+    flutter-version: 3.35.4
+    channel: stable
+    cache: false
+```
+
+- Installe Flutter version 3.35.4 (canal stable)
+- Désactive le cache pour garantir une installation propre
+
+##### 4. **Vérification des Versions**
+
+```yaml
+- name: Check Flutter & Dart version
+  run: flutter --version
+```
+
+- Affiche les versions de Flutter et Dart pour validation
+
+##### 5. **Installation des Dépendances**
+
+```yaml
+- name: Install dependencies
+  run: flutter pub get
+  working-directory: esp32_monitoring
+```
+
+- Installe toutes les dépendances Flutter définies dans `pubspec.yaml`
+- Exécute dans le répertoire `esp32_monitoring` (application Flutter)
+
+##### 6. **Exécution des Tests**
+
+```yaml
+- name: Run tests
+  run: flutter test
+  working-directory: esp32_monitoring
+```
+
+- Lance tous les tests unitaires et de widgets Flutter
+- Garantit la qualité du code avant la construction
+
+##### 7. **Construction de l'APK**
+
+```yaml
+- name: Build APK
+  run: flutter build apk --release
+  working-directory: esp32_monitoring
+```
+
+- Génère l'APK Android en mode release
+- Optimise l'application pour la production
+
+##### 8. **Sauvegarde des Artefacts**
+
+```yaml
+- name: Upload APK
+  uses: actions/upload-artifact@v4
+  with:
+    name: app-release-apk
+    path: esp32_monitoring/build/app/outputs/flutter-apk/app-release.apk
+```
+
+- Sauvegarde l'APK généré comme artefact GitHub Actions
+- Permet le téléchargement et la distribution de l'application
+
+#### Avantages du Pipeline CI/CD
+
+1. **Qualité du Code** : Tests automatiques à chaque modification
+2. **Détection Précoce** : Identification rapide des erreurs de compilation ou de test
+3. **Déploiement Automatisé** : Génération automatique des APK de release
+4. **Traçabilité** : Historique complet des builds et tests
+5. **Collaboration** : Validation automatique des Pull Requests
+
+#### Structure des Artefacts
+
+```
+esp32_monitoring/
+├── build/
+│   └── app/
+│       └── outputs/
+│           └── flutter-apk/
+│               └── app-release.apk  ← Artefact généré
+├── test/
+│   ├── widget_test.dart
+│   ├── firebase_mock.dart
+│   ├── models/
+│   └── widgets/
+└── lib/
+    ├── main.dart
+    ├── screens/
+    ├── services/
+    └── widgets/
+```
+
+#### Amélirations Futures Possibles
+
+1. **Tests d'Intégration** : Ajout de tests end-to-end automatisés
+2. **Déploiement Multi-plateforme** : Construction iOS et Web
+3. **Analyse de Code** : Intégration d'outils comme SonarQube
+4. **Déploiement Automatique** : Publication sur Google Play Store
+5. **Notifications** : Alertes Slack/Discord en cas d'échec de build
+
+Cette configuration CI/CD garantit un processus de développement robuste et fiable pour l'application mobile Beemo, permettant une itération rapide tout en maintenant la qualité du code.
