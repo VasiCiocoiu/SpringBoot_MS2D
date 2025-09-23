@@ -1,0 +1,75 @@
+<!-- templates/user/create_rucher.html -->
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nouveau rucher</title>
+    <link rel="stylesheet" th:href="@{/css/admin/admin.css}" />
+</head>
+<body>
+<div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="brand"><span class="logo">🐝</span><span class="brand-name">Ruches</span></div>
+        <nav class="menu">
+            <a th:href="@{/ruchers}">Ruchers</a>
+            <a th:href="@{/parametres}">Paramètres</a>
+            <div class="spacer"></div>
+            <a th:href="@{/logout}" class="logout">Déconnexion</a>
+        </nav>
+    </aside>
+
+    <!-- Contenu -->
+    <main class="content">
+        <div class="breadcrumb">
+            <a th:href="@{/ruchers}">Ruchers</a> / <span>Nouveau</span>
+        </div>
+
+        <h1>Nouveau rucher</h1>
+
+        <div class="panel">
+            <!-- Message d'erreur éventuel -->
+            <div th:if="${error}" class="alert alert-error" th:text="${error}">Erreur…</div>
+
+            <form th:action="@{/ruchers}" th:object="${rucher}" method="post" novalidate>
+                <!-- ID (clé Firebase) -->
+                <div class="field">
+                    <label for="id">Nom / ID du rucher <span class="help">(clé de stockage)</span></label>
+                    <input id="id"
+                           th:field="*{id}"
+                           type="text"
+                           placeholder="ex: rucher_nord"
+                           required
+                           autofocus
+                           maxlength="64"
+                           pattern="[^.#$\[\]/]{1,64}"
+                           title="Caractères interdits: . # $ [ ] /" />
+                    <small class="help">
+                        Évite les espaces et les caractères <code>. # $ [ ] /</code>. Cet identifiant sert de clé dans la base.
+                    </small>
+                </div>
+
+
+                <!-- Adresse -->
+                <div class="field">
+                    <label for="address">Adresse</label>
+                    <input id="address" th:field="*{address}" type="text" placeholder="Adresse ou coordonnées" />
+                </div>
+
+                <!-- Description -->
+                <div class="field">
+                    <label for="description">Description</label>
+                    <textarea id="description" th:field="*{description}" rows="4" placeholder="Notes, emplacement, remarques…"></textarea>
+                </div>
+
+                <div class="actions">
+                    <button type="submit" class="btn">Créer</button>
+                    <a th:href="@{/ruchers}" class="btn btn-secondary">Annuler</a>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+</body>
+</html>

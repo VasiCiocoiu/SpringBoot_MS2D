@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Nouvel apiculteur</title>
+    <link rel="stylesheet" th:href="@{/css/admin/admin.css}">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="brand"><span class="logo">🐝</span><span class="brand-name">Ruches</span></div>
+        <nav class="menu">
+            <a th:href="@{/user/rucher}">Dashboard</a>
+            <a th:href="@{/apiculteurs}" class="active">Apiculteurs</a>
+            <div class="spacer"></div>
+            <a th:href="@{/logout}" class="logout">Déconnexion</a>
+        </nav>
+    </aside>
+
+    <main class="content">
+        <h1>Créer un  apiculteur</h1>
+
+        <form th:action="@{/apiculteurs}" th:object="${apiculteur}" method="post" class="panel" style="max-width:560px;">
+            <div class="field">
+                <label>Nom</label>
+                <label>
+                    <input type="text" th:field="*{nom}" required>
+                </label>
+            </div>
+
+            <div class="field">
+                <label>Prénom</label>
+                <label>
+                    <input type="text" th:field="*{prenom}" required>
+                </label>
+            </div>
+
+            <div class="field">
+                <label>Adresse</label>
+                <label>
+                    <input type="text" th:field="*{adresse}">
+                </label>
+            </div>
+
+            <div class="field">
+                <label>Email</label>
+                <label>
+                    <input type="email" th:field="*{email}">
+                </label>
+            </div>
+
+
+            <div class="field">
+                <label>Mot de passe</label>
+                <label>
+                    <input type="password" name="rawPassword" autocomplete="new-password">
+                </label>
+            </div>
+
+            <div class="actions">
+                <button class="btn" type="submit">Enregistrer</button>
+                <a class="btn" th:href="@{/apiculteurs}" style="background:#444">Annuler</a>
+            </div>
+        </form>
+    </main>
+</div>
+</body>
+</html>

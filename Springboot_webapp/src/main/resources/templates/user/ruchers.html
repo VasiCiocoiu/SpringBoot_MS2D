@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/user/ruchers.css}" />
+</head>
+<body>
+<div class="layout">
+
+    <!-- Sidebar gauche -->
+    <aside class="sidebar">
+        <div class="brand">
+            <span class="logo">🐝</span>
+            <span class="brand-name">Ruches</span>
+        </div>
+        <nav class="menu">
+
+            <a th:href="@{/ruchers}">Ruchers</a>
+            <a th:href="@{/parametres}">Paramètres</a>
+            <div class="spacer"></div>
+            <a th:href="@{/logout}" class="logout">Déconnexion</a>
+        </nav>
+    </aside>
+
+
+    <main class="content">
+
+
+        <header class="topbar">
+            <form class="search" th:action="@{/recherche_ruchers}" method="get" role="search">
+                <label>
+                    <input type="search" name="q" placeholder="Rechercher un rucher…" th:value="${param.q}" />
+                </label>
+                <button type="submit" class="btn">Rechercher</button>
+            </form>
+
+            <a class="btn btn-plus" th:href="@{/ruchers/new}" title="Ajouter un rucher">+</a>
+
+        </header>
+
+        <section class="cards">
+            <a class="card"
+               th:each="rucher : ${ruchers}"
+               th:href="@{|/ruchers/${rucher.id}/ruches|}">
+                <div class="card-hex"></div>
+                <h3 th:text="${rucher.nom}">Rucher</h3>
+                <p class="muted">
+                    <span th:text="${rucher.ruches != null ? #maps.size(rucher.ruches) : 0}">0</span> ruches
+                </p>
+            </a>
+
+
+            <div class="card placeholder" th:if="${#lists.isEmpty(ruchers)}">
+                <div class="card-hex"></div>
+                <h3>Aucun rucher</h3>
+                <p class="muted">Clique sur + pour en créer un</p>
+            </div>
+        </section>
+
+
+
+
+
+        <!-- Motifs honeycomb décor (même style que login) -->
+        <svg class="honeycomb tr" viewBox="0 0 960 600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <polygon id="hex" points="60,0 120,35 120,105 60,140 0,105 0,35" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+            </defs>
+            <!-- rangs (exemple compact) -->
+            <use href="#hex" x="0" y="0"/><use href="#hex" x="120" y="0"/><use href="#hex" x="240" y="0"/>
+            <use href="#hex" x="60" y="80"/><use href="#hex" x="180" y="80"/><use href="#hex" x="300" y="80"/>
+            <use href="#hex" x="0" y="160"/><use href="#hex" x="120" y="160"/><use href="#hex" x="240" y="160"/>
+        </svg>
+
+        <svg class="honeycomb bl" viewBox="0 0 960 600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <polygon id="hex2" points="60,0 120,35 120,105 60,140 0,105 0,35" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+            </defs>
+            <use href="#hex2" x="0" y="0"/><use href="#hex2" x="120" y="0"/><use href="#hex2" x="240" y="0"/>
+            <use href="#hex2" x="60" y="80"/><use href="#hex2" x="180" y="80"/><use href="#hex2" x="300" y="80"/>
+            <use href="#hex2" x="0" y="160"/><use href="#hex2" x="120" y="160"/><use href="#hex2" x="240" y="160"/>
+        </svg>
+
+    </main>
+</div>
+</body>
+</html>
