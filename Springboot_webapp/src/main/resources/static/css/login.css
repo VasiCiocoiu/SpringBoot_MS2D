@@ -1,0 +1,128 @@
+:root{
+    --bg:#282B33;
+    --input:#777171;
+    --btn:#58179D;
+    --white:#FFFFFF;
+}
+
+*{ box-sizing:border-box; }
+
+html,body{
+    height:100%;
+    margin:0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial;
+    color:var(--white);
+    background:var(--bg);
+}
+
+.page{
+    position:relative;
+    min-height:100vh;
+    display:grid;
+    place-items:center;
+    padding:2rem;
+    overflow:hidden;
+}
+
+
+.login-card{
+    width:min(440px, 92vw);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(6px);
+    border-radius: 18px;
+    padding: 1.6rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+
+.title{
+    margin:0 0 1rem 0;
+    text-align:center;
+    font-size:1.7rem;
+    letter-spacing:.5px;
+}
+
+.field{
+    display:flex;
+    flex-direction:column;
+    gap:.4rem;
+    margin:.8rem 0;
+}
+
+label{ font-size:.9rem; opacity:.9; }
+
+input[type="text"],
+input[type="password"]{
+    width:100%;
+    border:none;
+    outline:none;
+    padding:.95rem 1rem;
+    border-radius:12px;
+    background: var(--input);
+    color: var(--white);
+    font-size:1rem;
+}
+
+input::placeholder{ color: rgba(255,255,255,0.8); }
+
+.actions{
+    margin-top:1rem;
+    display:flex;
+    flex-direction:column;
+    gap:.8rem;
+}
+
+.btn{
+    display:inline-block;
+    width:100%;
+    text-align:center;
+    padding: .95rem 1rem;
+    border-radius:12px;
+    background: var(--btn);
+    color:#fff;
+    border:none;
+    font-weight:600;
+    letter-spacing:.3px;
+    cursor:pointer;
+    transition: transform .06s ease, opacity .2s ease;
+}
+.btn:hover{ opacity:.9; }
+.btn:active{ transform: translateY(1px); }
+
+.helper{
+    text-align:center;
+    font-size:.9rem;
+    color: rgba(255,255,255,.85);
+}
+
+
+.honeycomb{
+    position:absolute;
+    width: 46vw;
+    max-width: 700px;
+    opacity:1;
+    pointer-events:none;
+    user-select:none;
+}
+
+/* bas gauche */
+.honeycomb.bl{
+    left:-15vw;
+    bottom:-15vh;
+    transform: rotate(50deg);
+}
+
+/* haut droite */
+.honeycomb.tr{
+    right:-15vw;
+    top:-1Vh;
+    transform: rotate(50deg);
+
+
+}
+
+/* responsive */
+@media (max-width: 640px){
+    .login-card{ padding:1.2rem; }
+    .honeycomb{ width:70vw; opacity:.12; }
+}

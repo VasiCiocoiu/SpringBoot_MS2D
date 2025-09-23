@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Connexion</title>
+    <link rel="stylesheet" th:href="@{/css/login.css}" />
+</head>
+<body>
+<main class="page">
+
+    <!-- Carte de login CENTRÉE -->
+    <section class="login-card" aria-label="Formulaire de connexion">
+        <h1 class="title">Connexion</h1>
+
+        <form th:action="@{/login}" method="post" autocomplete="on">
+            <div class="field">
+                <label for="username">Identifiant</label>
+                <input id="username" name="username" type="text" placeholder="Votre identifiant" required />
+            </div>
+
+            <div class="field">
+                <label for="password">Mot de passe</label>
+                <input id="password" name="password" type="password" placeholder="Votre mot de passe" required />
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="btn">Se connecter</button>
+                <p class="helper">Mot de passe oublié ?</p>
+            </div>
+        </form>
+    </section>
+
+    <!-- Motif ruches en BAS GAUCHE -->
+    <!-- Motif ruches — BAS GAUCHE : rangées plus denses -->
+    <svg class="honeycomb bl" viewBox="0 0 960 600" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+            <!-- Hexagone pointu en haut (dimensions de base: 120x140) -->
+            <polygon id="hex" points="60,0 120,35 120,105 60,140 0,105 0,35" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+        </defs>
+        <!-- Grille en rangs (5 lignes x 7 colonnes) -->
+        <!-- ligne 0 (pas de décalage) -->
+        <use href="#hex" x="0"   y="0"/>
+        <use href="#hex" x="120" y="0"/>
+        <use href="#hex" x="240" y="0"/>
+        <use href="#hex" x="360" y="0"/>
+        <use href="#hex" x="480" y="0"/>
+        <use href="#hex" x="600" y="0"/>
+        <use href="#hex" x="720" y="0"/>
+        <!-- ligne 1 (décalée de 60px en X) -->
+        <use href="#hex" x="60"  y="80"/>
+        <use href="#hex" x="180" y="80"/>
+        <use href="#hex" x="300" y="80"/>
+        <use href="#hex" x="420" y="80"/>
+        <use href="#hex" x="540" y="80"/>
+        <use href="#hex" x="660" y="80"/>
+        <use href="#hex" x="780" y="80"/>
+        <!-- ligne 2 -->
+        <use href="#hex" x="0"   y="160"/>
+        <use href="#hex" x="120" y="160"/>
+        <use href="#hex" x="240" y="160"/>
+        <use href="#hex" x="360" y="160"/>
+        <use href="#hex" x="480" y="160"/>
+        <use href="#hex" x="600" y="160"/>
+        <use href="#hex" x="720" y="160"/>
+        <!-- ligne 3 (décalée) -->
+        <use href="#hex" x="60"  y="240"/>
+        <use href="#hex" x="180" y="240"/>
+        <use href="#hex" x="300" y="240"/>
+        <use href="#hex" x="420" y="240"/>
+        <use href="#hex" x="540" y="240"/>
+        <use href="#hex" x="660" y="240"/>
+        <use href="#hex" x="780" y="240"/>
+        <!-- ligne 4 -->
+        <use href="#hex" x="0"   y="320"/>
+        <use href="#hex" x="120" y="320"/>
+        <use href="#hex" x="240" y="320"/>
+        <use href="#hex" x="360" y="320"/>
+        <use href="#hex" x="480" y="320"/>
+        <use href="#hex" x="600" y="320"/>
+        <use href="#hex" x="720" y="320"/>
+    </svg>
+
+    <!-- Motif ruches — HAUT DROITE : rangées plus denses -->
+    <svg class="honeycomb tr" viewBox="0 0 960 600" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+            <polygon id="hex" points="60,0 120,35 120,105 60,140 0,105 0,35" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+        </defs>
+        <!-- Même grille (5 x 7) ; libre à toi d’en mettre plus -->
+        <use href="#hex" x="0"   y="0"/>
+        <use href="#hex" x="120" y="0"/>
+        <use href="#hex" x="240" y="0"/>
+        <use href="#hex" x="360" y="0"/>
+        <use href="#hex" x="480" y="0"/>
+        <use href="#hex" x="600" y="0"/>
+        <use href="#hex" x="720" y="0"/>
+
+        <use href="#hex" x="60"  y="80"/>
+        <use href="#hex" x="180" y="80"/>
+        <use href="#hex" x="300" y="80"/>
+        <use href="#hex" x="420" y="80"/>
+        <use href="#hex" x="540" y="80"/>
+        <use href="#hex" x="660" y="80"/>
+        <use href="#hex" x="780" y="80"/>
+
+        <use href="#hex" x="0"   y="160"/>
+        <use href="#hex" x="120" y="160"/>
+        <use href="#hex" x="240" y="160"/>
+        <use href="#hex" x="360" y="160"/>
+        <use href="#hex" x="480" y="160"/>
+        <use href="#hex" x="600" y="160"/>
+        <use href="#hex" x="720" y="160"/>
+
+        <use href="#hex" x="60"  y="240"/>
+        <use href="#hex" x="180" y="240"/>
+        <use href="#hex" x="300" y="240"/>
+        <use href="#hex" x="420" y="240"/>
+        <use href="#hex" x="540" y="240"/>
+        <use href="#hex" x="660" y="240"/>
+        <use href="#hex" x="780" y="240"/>
+
+        <use href="#hex" x="0"   y="320"/>
+        <use href="#hex" x="120" y="320"/>
+        <use href="#hex" x="240" y="320"/>
+        <use href="#hex" x="360" y="320"/>
+        <use href="#hex" x="480" y="320"/>
+        <use href="#hex" x="600" y="320"/>
+        <use href="#hex" x="720" y="320"/>
+    </svg>
+
+
+</main>
+</body>
+</html>
