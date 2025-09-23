@@ -17,8 +17,45 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Temp Monitor',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF1E1E2C),
+        primaryColor: const Color(0xFF7A1CAC),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF7A1CAC),
+          brightness: Brightness.dark,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF1E1E2C),
+          foregroundColor: Colors.white,
+        ),
+        textTheme: const TextTheme(
+          bodyMedium: TextStyle(color: Colors.white),
+          bodySmall: TextStyle(color: Colors.white70),
+          titleLarge: TextStyle(color: Colors.white),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.black26,
+          hintStyle: const TextStyle(color: Colors.grey),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(12)),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF7A1CAC),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            textStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
       ),
       home: const FirebaseInitScreen(),
     );
@@ -31,10 +68,10 @@ class FirebaseInitScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: Firebase.initializeApp(), // Ensure Firebase is initialized
+      future: Firebase.initializeApp(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
-          return AuthWrapper(); // Show login or home screen
+          return const AuthWrapper();
         } else if (snapshot.hasError) {
           return const Scaffold(
             body: Center(child: Text('Firebase Init Error')),
